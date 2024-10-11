@@ -1,0 +1,215 @@
+
+
+programa = _ instucciones* _
+
+instucciones 
+    = _ declaraciones _
+        
+declaraciones 
+   =  declaracionstrucuts _ 
+    / declaracionfunciones _ 
+     / declaracionvariables _ ";" _
+    / Stmt _ 
+        
+
+declaracionstrucuts
+    = "struct" _ id:id _ "{" _ (declaracionvariables _ ";" _ )+  _"}" _ ";" 
+
+instancia
+    = _ id:id _ "{" _params  _ "}" _
+        
+
+params = _ aram _  ("," _ param)*
+        
+
+param
+    = _ id _ ":" _ expresion _ 
+
+declaracionfunciones 
+    = (tipo / "void"/ id) _ id _ "(" _ Parametros? _ ")" _ bloque 
+
+Parametros 
+    = declarafunc _ params:("," _ declarafunc )* 
+
+
+declarafunc
+    = declaracionvariables
+
+declaracionvariables  //declara variables y arrays
+    = (tipo / "var"/ id) _ ("[" _ "]"_ )* _ id _ ( "=" _ valor:expresion ) ? 
+
+Stmt 
+    = print 
+    /sprint
+    /if
+    /switch
+    /break
+    /conti
+    /ret
+    /foreach
+    /for
+    /while
+    / exp:expresion _ ";"
+
+
+print 
+    = "print" _ "(" _ expresion _ ")" _ ";" 
+
+bloque 
+    = "{" _ instucciones* _ "}" 
+
+if                                                                                    
+    = "if" _ "(" _ cond:expresion _ ")" _ bloque _ (_ "else" _ stmtFalse:(bloque/if)  )? 
+      
+switch
+    = "switch" _ "(" _ cond:expresion _ ")" _ "{" _ cases:case* _ def:default? _ "}" 
+        
+case
+    =  tipo:("case") _ exp:expresion _ ":" _ stmt:instucciones* _
+    
+default
+    =  tipo:"default" _ ":" _ stmt:instucciones* _
+  
+
+for
+    = "for" _ "(" _ init:ForInit _ cond:expresion _ ";" _ inc:asignatura _ ")" _ stmt:bloque
+
+
+ForInit
+    = dcl:declaracionvariables _ ";" 
+    / exp:expresion _ ";" 
+    / ";" 
+
+foreach
+    = "for" _ "(" _ va:declaracionvariables _ ":" _ arr:expresion _ ")" _ bloque:bloque
+
+
+while
+    = "while" _ "(" _ cond:expresion _ ")" _ stmt:bloque 
+
+   
+
+//----------------Transferencia----------------
+break
+    = _ "break" _ ";" 
+
+conti 
+    = "continue" _ ";" 
+
+ret
+    = "return" _ exp:expresion? _  ";" 
+
+asignatura
+    =  id:llamada _ op:("+="/"-="/"=") _ valor:expresion _ 
+      
+expresion = asignacion
+
+asignacion 
+    = asignatura
+    /ternario
+
+ternario 
+    = _ condicion: OR _ "?" _ verdadero:ternario _ ":" _ falso:ternario _ 
+    / OR 
+
+OR 
+    = _ AND expansion:( _ "||" _ AND )*
+
+AND 
+    = _ izq:igualdad expansion:( _ "&&" _ der:igualdad )*
+
+igualdad 
+    = izq:relacional expansion:( _ op:("==" / "!=") _ der:relacional )* 
+    
+relacional 
+    = izq:Suma expansion:( _ op:("<=" /">="/"<" / ">") _ der:Suma)* 
+
+Suma 
+    = izq:Multiplicacion expansion:(_ op:("+" / "-") _ der:Multiplicacion )*
+
+Multiplicacion = izq:Unarias expansion:(_ op:("*" / "/"/"%") _ der:Unarias )*
+
+Unarias 
+    = "-" _ num:Unarias
+    /"!" _ num:Unarias 
+    /llamada
+    / datos
+Marray
+    = m:("indexOf"/"join"/"Object.keys") arg:( "(" _ exp:expresion?_ ")" {exp})?
+    
+llamada 
+    =  objetivoInicial:datos operaciones:(
+    ("(" _ args:Argumentos? _ ")" { {args, tipo: 'funcCall' } })
+    / ("." _ id:("length"/Marray/id/llamada) _ { { id, tipo: 'Get' } }) 
+    / ("[" _ id:expresion _ "]" { { id, tipo: 'Inarray' } })
+    )* 
+
+sprint
+    = "System.out.println" _ "(" _ args:Argumentos _ ")" _ ";" 
+    
+typeof
+    = "typeof" _  exp:expresion  _ 
+
+Argumentos 
+    = arg:expresion _ args:("," _ exp:expresion)* 
+  
+datos 
+    = numeros
+    /agrupacion
+    / decimal 
+    / booleano 
+    / cadena 
+    /instancia
+    / char 
+    /typeof 
+    /instanciaArray
+    /idvalue
+
+instanciaArray
+    = "new" _ tip:(tipo / id) _ t:("[" _ exp:expresion _ "]" _{exp})+  
+    /  "{" _ args:Argumentos _ "}" _
+
+
+agrupacion 
+    =  "(" _ exp:expresion _ ")" _
+
+numeros 
+    = decimal 
+    / entero 
+
+entero 
+    = [0-9]+    { ('Primitivo', { tipo: 'int', valor: parseInt(text()) })}
+
+decimal 
+    = [0-9]+("."[0-9]+)     { ('Primitivo', { tipo: 'float', valor: parseFloat(text()) })}
+        
+booleano 
+    = ("true" / "false")  { ('Primitivo', { tipo: 'boolean', valor: text() === "true" ? true : false })}
+
+cadena 
+    = "\"" (!"\"" .)* "\""   { ('Primitivo', { tipo: 'string', valor: text().slice(1, -1) })}
+
+char 
+    = "'" (!"'" .) "'"     { ('Primitivo', { tipo: 'char', valor: text().slice(1, -1) })}
+
+idvalue
+     = id: "Object.keys"
+        { ('ReferenciaVariable', {id})} 
+     / id:id    
+        { ('ReferenciaVariable', {id})}
+
+reservadas = "int" / "float" / "string" / "char" / "boolean" / "true" / "false" / "void" /
+ "var" / "struct" / "if" / "else" / "switch" / "case" / "default" / "break" / "continue" 
+ / "return" / "for" / "while" / "print" / "System.out.println"  / "new" / "null"  
+
+
+
+identificador = ([a-zA-Z_])[a-zA-Z0-9_]* {text()}
+id = !reservadas id:identificador {id}
+
+tipo = "int" / "float" / "string" / "char" / "boolean"
+
+_ = ([ \t\n\r] / Comentarios)* 
+
+Comentarios = "//" (![\n] .)*
+            / "/*" (!("*/") .)* "*/"

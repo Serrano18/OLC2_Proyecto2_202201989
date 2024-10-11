@@ -1,0 +1,168 @@
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333; /* Color de fondo de la barra de navegación */
+  }
+  
+  nav {
+    width: 100%; /* Ancho al 100% */
+    text-align: left; /* Texto alineado a la izquierda */
+    position: fixed; /* Fija la barra de navegación */
+    top: 0; /* Coloca la barra en la parte superior */
+    left: 0; /* Alinea la barra a la izquierda */
+    background-color: #333; /* Color de fondo de la barra de navegación */
+    z-index: 1000; /* Asegura que la barra esté por encima de otros elementos */
+  }
+  
+  
+  nav ul li {
+    float: left;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: large;
+  }
+  
+  nav ul li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+  }
+  
+  nav ul li a:hover {
+    background-color: #ddd; /* Color de fondo al pasar el ratón por encima */
+    color: black;
+  }
+  
+  .logo {
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
+  }
+  .logo:hover {
+    filter: drop-shadow(0 0 2em #646cffaa);
+  }
+  .logo.react:hover {
+    filter: drop-shadow(0 0 2em #61dafbaa);
+  }
+  
+  .card {
+    padding: 1em;
+  }
+  
+  .read-the-docs {
+    color: #888;
+  }
+  
+  .container {
+    display: flex;
+  }
+  
+  .editor {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  
+  .con {
+    text-align: left !important; /* Alinear el texto a la izquierda */
+  }
+  .textarea-left,
+  .textarea-right {
+    background: url(numeros.png);
+    flex: 1; /* Ocupar todo el espacio restante */
+    width: 609px;
+    margin-right: 1rem;
+    height: 100%; /* Altura mínima del textarea */
+    resize: none; /* Evitar que el usuario pueda redimensionar el textarea */
+    padding: 8px; /* Espaciado interno del textarea */
+    font-family: monospace; /* Usar una fuente de ancho fijo para mantener la alineación de los números de línea */
+    background-attachment: local;
+    background-repeat: no-repeat;
+    padding-left: 35px;
+    padding-top: 10px;
+    border-color:#ccc;
+    border-radius: 0.5pc;
+    overflow: auto; /* Agrega desplazamiento tanto horizontal como vertical */
+    white-space: pre-wrap; /* Asegura que el texto se ajuste y permita el desplazamiento vertical */
+  
+  }
+  .contain {
+    display: flex;
+    align-items: center; /* Centra verticalmente los elementos */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: large;
+  }
+  
+  .contain h3 {
+    margin: 0; /* Elimina el margen predeterminado de los h3 */
+  }
+  
+  .contain h3 + h3 {
+    margin-left: 50%; /* Establece el margen izquierdo entre los h3 */
+  }
+  .contenedor {
+    border: 1px solid black; /* Borde negro para el contenedor */
+    padding: 20px; /* Espaciado interno */
+    margin: 20px; /* Margen externo */
+    
+  }
+  
+  table {
+    border-collapse: collapse; /* Colapsar bordes */
+    width: 100%; /* Ancho total de la tabla */
+  }
+  
+  th, td {
+    border: 1px solid white; /* Borde blanco para celdas */
+    padding: 8px; /* Espaciado interno de celdas */
+    text-align: center; /* Alinear texto a la izquierda */
+  }
+  
+  th {
+    background-color: #f2f2f2; /* Color de fondo para encabezados */
+    color:#333
+  }
+
+
+.editor {
+    flex: 1;
+    margin-right: 10px;
+}
+.textarea-left, .textarea-right {
+    width: 100%;
+    height: 90vh;
+}
+
+/* Contenedor de pestañas vertical */
+#tabs-container {
+  display: flex;
+  flex-direction: column; /* Cambia la dirección a columna para que las pestañas estén una debajo de la otra */
+  background-color: #f1f1f1;
+  border-right: 1px solid #ccc;
+  padding: 0;
+  margin: 0;
+  width: 150px; /* Define un ancho fijo para el área de pestañas */
+  overflow-y: auto; /* Permite el desplazamiento vertical si hay muchas pestañas */
+}
+
+/* Estilos para las pestañas */
+#tabs-container .tab {
+  background-color: #e1e1e1;
+  padding: 10px; /* Ajusta el padding para hacer las pestañas más compactas */
+  margin-bottom: 2px; /* Añade margen entre las pestañas */
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  text-align: center; /* Centra el texto de las pestañas */
+}
+
+#tabs-container .tab.active {
+  background-color: white;
+  font-weight: bold;
+  border-left: 4px solid #333; /* Indicador visual de la pestaña activa */
+}

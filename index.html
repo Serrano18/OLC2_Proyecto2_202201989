@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>OakLand</title>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#" id="new-file">Crear Archivo</a></li>
+            <li><a href="#" id="save-file">Guardar Archivo</a></li>
+            <li><a href="#" id="open-file">Abrir Archivo</a></li>
+            <li><a href="#" id="run">Ejecutar</a></li>
+            <li><a href="#"id="Rerrores">Reporte de Errores</a></li>
+            <li><a href="#" id="Rsimbolos">Reporte de Tabla de Símbolos</a></li>
+        </ul>
+    </nav>
+    </br></br>  </br></br>
+</br>
+
+
+    <div class="container">
+        <div id="tabs-container"> </div></br>
+        <div class="editor">
+            <textarea class="textarea-left" placeholder="Escribe tu código aquí..." id="codeEditor"></textarea>
+            <textarea class="textarea-right" id="consoleOutput" readonly></textarea>
+        </div>
+    </div>
+    
+    <input type="file" id="file-input" accept=".oak" style="display: none;">    
+    </br></br>  </br></br></br></br>  </br></br>
+    <table id="tablaSimbolos">
+        <caption><h2>Tabla de Símbolos</h2> </caption>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>ID</th>
+            <th>Tipo de Símbolo</th>
+            <th>Tipo de Dato</th>
+            <th>Línea</th>
+            <th>Columna</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <table id="tablaErrores">
+        <caption><h2>Tabla de Errores</h2> </caption>
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Descripcion</th>
+            <th>Tipo</th>
+            <th>Línea</th>
+            <th>Columna</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    <script type="module" src="index.js"></script>
+</body>
+</html>
