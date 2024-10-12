@@ -1,5 +1,6 @@
 import { registers as r } from "../RISC/constantes.js";
-import { stringTo1ByteArray,stringTo32BitsArray } from "../RISC/utils.js";
+import { floatRegisters as f } from "../RISC/constantes.js";
+import { stringTo1ByteArray,stringTo32BitsArray,numberToF32 } from "../RISC/utils.js";
 import { builtins } from "../RISC/builtins.js";
 import { errores } from "../index.js";
 import { ErrorData } from "../Symbol/errores.js";
@@ -125,6 +126,10 @@ export class Generador {
     push(rd = r.T0) {
         this.addi(r.SP, r.SP, -4) // 4 bytes = 32 bits
         this.sw(rd, r.SP)
+    }
+    pushFloat(rd = r.FT0) {
+        this.addi(r.SP, r.SP, -4) // 4 bytes = 32 bits
+        this.fsw(rd, r.SP)
     }
 
     pop(rd = r.T0) {
@@ -272,10 +277,16 @@ export class Generador {
                 length = 4;
                 break;
             case 'char':
-                    this.li(r.T0, object.valor.charCodeAt(0));
-                    this.push(r.T0);
-                    length = 4;
-                    break;
+                this.li(r.T0, object.valor.charCodeAt(0));    
+                this.push(r.T0);
+                length = 4;
+                break;
+            case 'float':
+                const ieee754 = numberToF32(object.valor);
+                this.li(r.T0, ieee754);
+                this.push(r.T0);
+                length = 4;
+                break;
             default:
                 break;
         }
@@ -284,6 +295,10 @@ export class Generador {
     }
     pushObject(object) {
         this.objectStack.push(object);
+    }
+    popFloat(rd = f.FT0) {
+        this.flw(rd, r.SP)
+        this.addi(r.SP, r.SP, 4)
     }
 
     popObject(rd = r.T0) {
@@ -301,6 +316,9 @@ export class Generador {
             case 'boolean':
                 this.pop(rd);
                 break;
+            case 'float':
+                this.popFloat(rd);
+                break;
             default:
                 break;
         }
@@ -308,7 +326,53 @@ export class Generador {
         return object;
     }
 
-    
+    getTopObject() {
+        return this.objectStack[this.objectStack.length - 1];
+    }
+
+
+    //Instrucciones RISC-V para floats
+    fadd(rd, rs1, rs2) {
+        this.instrucciones.push(new Instruction('fadd.s', rd, rs1, rs2))
+    }
+
+    fsub(rd, rs1, rs2) {
+        this.instrucciones.push(new Instruction('fsub.s', rd, rs1, rs2))
+    }
+
+    fmul(rd, rs1, rs2) {
+        this.instrucciones.push(new Instruction('fmul.s', rd, rs1, rs2))
+    }
+
+    fdiv(rd, rs1, rs2) {
+        this.instrucciones.push(new Instruction('fdiv.s', rd, rs1, rs2))
+    }
+
+    fli(rd, inmediato) {
+        this.instrucciones.push(new Instruction('fli.s', rd, inmediato))
+    }
+
+    fmv(rd, rs1) {
+        this.instrucciones.push(new Instruction('fmv.s', rd, rs1))
+    }
+
+    flw(rd, rs1, inmediato = 0) {
+        this.instrucciones.push(new Instruction('flw', rd, `${inmediato}(${rs1})`))
+    }
+
+    fsw(rs1, rs2, inmediato = 0) {
+        this.instrucciones.push(new Instruction('fsw', rs1, `${inmediato}(${rs2})`))
+    }
+
+    fcvtsw(rd, rs1) {
+        this.instrucciones.push(new Instruction('fcvt.s.w', rd, rs1))
+    }
+    printFloat() {
+        this.li(r.A7, 2)
+        this.ecall()
+    }
+
+
     toString() {
         this.endProgram()
         this.comment('#Builtins')
@@ -319,8 +383,7 @@ export class Generador {
             this.ret()
         })
 
-        return `
-.data
+        return `.data
         heap:
 .text
         la ${r.HP}, heap

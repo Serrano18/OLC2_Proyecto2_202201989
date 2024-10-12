@@ -2,13 +2,16 @@ import { registers as r } from "../RISC/constantes.js";
 import { Generador } from "../RISC/generador.js";
 import { BaseVisitor } from "../Compilador/visitor.js";
 import nodos, {OperacionIgualdades } from "../Compilador/nodos.js";
-
+import { floatRegisters as f } from "../RISC/constantes.js";
 
 export class CompilerVisitor extends BaseVisitor {
 
     constructor() {
         super();
         this.code = new Generador();
+        //ETIQUETAS DE TRANSFERENCIA
+        this.lcontinue = null
+        this.lbreak = null
     }
 
     /**
@@ -190,13 +193,38 @@ export class CompilerVisitor extends BaseVisitor {
         node.izq.accept(this);
         node.der.accept(this);
 
-        const der = this.code.popObject(r.T0);
-        const izq = this.code.popObject(r.T1);
-        if (izq.type === 'string' && der.type === 'string') {
+        const isDerFloat = this.code.getTopObject().type === 'float';
+        const der = this.code.popObject(isDerFloat ? f.FT0 : r.T0); // der
+        const isIzqFloat = this.code.getTopObject().type === 'float';
+        const izq = this.code.popObject(isIzqFloat ? f.FT1 : r.T1); // izq
+         if (izq.type === 'string' && der.type === 'string') {
             this.code.add(r.A0, r.ZERO, r.T1);
             this.code.add(r.A1, r.ZERO, r.T0);
             this.code.callBuiltin('concatString');
             this.code.pushObject({ type: 'string', length: 4 });
+            return;
+        }
+        if (isIzqFloat || isDerFloat) {
+            if (!isIzqFloat) this.code.fcvtsw(f.FT1, r.T1);
+            if (!isDerFloat) this.code.fcvtsw(f.FT0, r.T0);
+
+            switch (node.op) {
+                case '+':
+                    this.code.fadd(f.FT0, f.FT1, f.FT0);
+                    break;
+                case '-':
+                    this.code.fsub(f.FT0, f.FT1, f.FT0);
+                    break;
+                case '*':
+                    this.code.fmul(f.FT0, f.FT1, f.FT0);
+                    break;
+                case '/':
+                    this.code.fdiv(f.FT0, f.FT1, f.FT0);
+                    break;
+            }
+
+            this.code.pushFloat(f.FT0);
+            this.code.pushObject({ type: 'float', length: 4 });
             return;
         }
         switch (node.op) {
@@ -255,13 +283,15 @@ export class CompilerVisitor extends BaseVisitor {
         //this.code.comment('Print');
         node.exp.accept(this);
 
-        const object = this.code.popObject(r.A0); 
+        const isFloat = this.code.getTopObject().type === 'float';
+        const object = this.code.popObject(isFloat ? f.FA0 : r.A0);
 
         const tipoPrint = {
             'int': () => this.code.printInt(),
             'string': () => this.code.printString(),
             'char': () => this.code.printChar(),
             'boolean': () => this.code.printInt(),
+            'float': () => this.code.printFloat(),
         }
 
         tipoPrint[object.type]();
@@ -283,7 +313,14 @@ export class CompilerVisitor extends BaseVisitor {
 
     visitDeclaracionVariable(node){
         this.code.comment(`# Inicio Declaracion Variable: ${node.id}`); 
-        node.exp.accept(this)
+        if ( node.exp){
+            node.exp.accept(this)
+        }else{
+            //aqui que guardar null en el stack 0
+            this.code.li(r.T0,0)
+            this.code.push(r.T0)
+            this.code.pushObject({type:node.tipo,length:4});
+        }
         
         this.code.tagObject(node.id);
         this.code.comment(`# Fin Declaracion Variable: ${node.id}`);
@@ -293,15 +330,29 @@ export class CompilerVisitor extends BaseVisitor {
      * * @type {BaseVisitor['visitAsignacionvar']}
      */
     visitAsignacionvar(node){
-        node.valor.accept(this)
+        
         this.code.comment(`#Inicio Asignacion Variable: ${node.id}`); 
-        const valueObject = this.code.popObject(r.T0);
-        const [offset, variableObject] = this.code.getObject(node.id);
-
-        this.code.addi(r.T1, r.SP, offset);
-        this.code.sw(r.T0, r.T1);
-        variableObject.type = valueObject.type;
-        this.code.push(r.T0);
+        this.code.comment(`#lectura expresion`);
+        node.valor.accept(this)
+        
+        this.code.comment(`# fin lectura expresion`);
+        
+        const isFloat = this.code.getTopObject().type === 'float';
+        const valueObject = this.code.popObject(isFloat ? f.FT0 : r.T0);
+        if( valueObject.type == 'float'){
+            const [offset, variableObject] = this.code.getObject(node.id);
+            this.code.addi(r.T1, r.SP, offset);
+            this.code.sw(r.T0, r.T1);
+            variableObject.type = valueObject.type;
+            this.code.pushFloat(f.FT0);
+        }else{
+            const [offset, variableObject] = this.code.getObject(node.id);
+            this.code.addi(r.T1, r.SP, offset);
+            this.code.sw(r.T0, r.T1);
+            variableObject.type = valueObject.type;
+            this.code.push(r.T0);
+        }
+       
         this.code.pushObject(valueObject);
 
         this.code.comment(`#Fin Asignacion Variable: ${node.id}`); 
@@ -392,6 +443,8 @@ export class CompilerVisitor extends BaseVisitor {
         const fin = this.code.getLabel()
         const cases = node.cases.map(() => this.code.getLabel())
         let defa = false
+        const prevBreakLabel = this.lbreak;
+        this.lbreak = fin;
         //Ahora hay que trabajar la condicion entonces hay que recorrer los casos y verificar las condicionales 
         node.cases.forEach((c, i) => {
             //Nodo para verificar la condicion 
@@ -424,6 +477,8 @@ export class CompilerVisitor extends BaseVisitor {
             node.def.accept(this)
         }
         this.code.addLabel(fin)
+        
+        this.lbreak = prevBreakLabel;
     }
 
     visitCase(node){
@@ -433,4 +488,107 @@ export class CompilerVisitor extends BaseVisitor {
         }
         this.code.comment(`#Fin Case: ${node.exp}`)
     }
+
+    visitWhile(node){
+        const startWhileLabel = this.code.getLabel();
+        const prevContinueLabel = this.lcontinue;
+        this.lcontinue = startWhileLabel;
+
+        const endWhileLabel = this.code.getLabel();
+        const prevBreakLabel = this.lbreak;
+        this.lbreak = endWhileLabel;
+
+        this.code.addLabel(startWhileLabel);
+        this.code.comment('#Condicion');
+        node.cond.accept(this);
+        this.code.popObject(r.T0);
+        this.code.comment('#Fin de condicion');
+        this.code.beq(r.T0, r.ZERO, endWhileLabel);
+        this.code.comment('#Cuerpo del while');
+        node.stmt.accept(this);
+        this.code.j(startWhileLabel);
+        this.code.addLabel(endWhileLabel);
+
+        this.lcontinue = prevContinueLabel;
+        this.lbreak = prevBreakLabel;
+    }
+    visitFor(node){
+        this.code.comment('#For');
+
+        const startForLabel = this.code.getLabel();
+
+        const endForLabel = this.code.getLabel();
+        const prevBreakLabel = this.breakLabel;
+        this.breakLabel = endForLabel;
+
+        const incrementLabel = this.code.getLabel();
+        const prevContinueLabel = this.continueLabel;
+        this.continueLabel = incrementLabel;
+
+        this.code.newScope();
+
+        node.init.accept(this);
+
+        this.code.addLabel(startForLabel);
+        this.code.comment('#Condicion');
+        node.cond.accept(this);
+        this.code.popObject(r.T0);
+        this.code.comment('#Fin de condicion');
+        this.code.beq(r.T0, r.ZERO, endForLabel);
+
+        this.code.comment('#Cuerpo del for');
+        node.stmt.accept(this);
+
+        this.code.addLabel(incrementLabel);
+        node.inc.accept(this);
+        this.code.popObject(r.T0);
+        this.code.j(startForLabel);
+
+        this.code.addLabel(endForLabel);
+
+        this.code.comment('#Reduciendo la pila');
+        const bytesToRemove = this.code.endScope();
+
+        if (bytesToRemove > 0) {
+            this.code.addi(r.SP, r.SP, bytesToRemove);
+        }
+
+        this.continueLabel = prevContinueLabel;
+        this.breakLabel = prevBreakLabel;
+
+        this.code.comment('#Fin de For');
+    }
+
+    visitBreak(node){
+        this.code.j(this.lbreak);
+    }
+
+    visitContinue(node){
+        this.code.j(this.lcontinue);
+    }
+
+
+    visitSprint (node){
+             //this.code.comment('Print');
+             for (const exp of node.args) {
+                exp.accept(this);
+
+                const isFloat = this.code.getTopObject().type === 'float';
+                const object = this.code.popObject(isFloat ? f.FA0 : r.A0);
+        
+                const tipoPrint = {
+                    'int': () => this.code.printInt(),
+                    'string': () => this.code.printString(),
+                    'char': () => this.code.printChar(),
+                    'boolean': () => this.code.printInt(),
+                    'float': () => this.code.printFloat(),
+                }
+        
+                tipoPrint[object.type]();
+                this.code.li(r.A0, 10);
+                this.code.li(r.A7, 11);
+                this.code.ecall(); 
+            }
+             
+            }
 }
