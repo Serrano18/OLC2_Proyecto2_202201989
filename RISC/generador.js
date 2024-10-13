@@ -364,8 +364,18 @@ export class Generador {
         this.instrucciones.push(new Instruction('fsw', rs1, `${inmediato}(${rs2})`))
     }
 
+    feq_s(rd, rs1, rs2) {
+        this.instrucciones.push(new Instruction('feq.s', rd, rs1, rs2))
+    }
+
     fcvtsw(rd, rs1) {
         this.instrucciones.push(new Instruction('fcvt.s.w', rd, rs1))
+    }
+    flts(rd, rs1,rs2) {
+        this.instrucciones.push(new Instruction('flt.s', rd, rs1,rs2))
+    }
+    fles(rd, rs1, rs2) {
+        this.instrucciones.push(new Instruction('fle.s', rd, rs1, rs2))
     }
     printFloat() {
         this.li(r.A7, 2)

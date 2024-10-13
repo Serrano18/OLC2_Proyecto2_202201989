@@ -19,7 +19,8 @@ export class CompilerVisitor extends BaseVisitor {
      */
     visitExpresionStmt(node) {
         node.exp.accept(this);
-        this.code.popObject(r.T0);
+        const isDerFloat = this.code.getTopObject().type === 'float';
+        this.code.popObject(isDerFloat ? f.FT0 : r.T0);
     }
 
     /**
@@ -54,8 +55,10 @@ export class CompilerVisitor extends BaseVisitor {
         node.izq.accept(this);
         node.der.accept(this);
         //variables de la pila
-        const der =  this.code.popObject(r.T0);
-        const izq = this.code.popObject(r.T1);
+        const isDerFloat = this.code.getTopObject().type === 'float';
+        const der = this.code.popObject(isDerFloat ? f.FT0 : r.T0); // der
+        const isIzqFloat = this.code.getTopObject().type === 'float';
+        const izq = this.code.popObject(isIzqFloat ? f.FT1 : r.T1); // izq
         //etiquetas de saltos
         const verdadero = this.code.getLabel();
         const final = this.code.getLabel();
@@ -68,11 +71,22 @@ export class CompilerVisitor extends BaseVisitor {
                 '!=': () => this.code.bne(r.T0,r.ZERO,verdadero)
             }
             operadores[node.op]();
-        }else{
+        
+        } else {
+            
+            if (!isIzqFloat) this.code.fcvtsw(f.FT1, r.T1); // Convertir izq a float si es entero
+            if (!isDerFloat) this.code.fcvtsw(f.FT0, r.T0); // Convertir der a float si es entero
+            
             const operadores = {
-                '==': () => this.code.beq(r.T0,r.T1,verdadero),
-                '!=': () => this.code.bne(r.T0,r.T1,verdadero)
-            }
+                '==': () => {
+                    this.code.feq_s(r.T0, f.FT1, f.FT0);  // Comparar si FT1 == FT0 y guardar el resultado en T0
+                    this.code.bne(r.T0, r.ZERO, verdadero);  // Si son iguales, ir a verdadero
+                },
+                '!=': () => {
+                    this.code.feq_s(r.T0, f.FT1, f.FT0);  // Comparar si FT1 == FT0
+                    this.code.beq(r.T0, r.ZERO, verdadero);  // Si no son iguales, ir a verdadero
+                    }
+                };
             operadores[node.op]();
         }
        
@@ -99,18 +113,37 @@ export class CompilerVisitor extends BaseVisitor {
         node.izq.accept(this);
         node.der.accept(this);
         //variables de la pila
-         this.code.popObject(r.T0);
-         this.code.popObject(r.T1);
-        //etiquetas de saltos
+        const isDerFloat = this.code.getTopObject().type === 'float';
+        this.code.popObject(isDerFloat ? f.FT0 : r.T0); // der
+        const isIzqFloat = this.code.getTopObject().type === 'float';
+        this.code.popObject(isIzqFloat ? f.FT1 : r.T1); // izq
+         //etiquetas de saltos
+         if (!isIzqFloat) this.code.fcvtsw(f.FT1, r.T1); // Convertir izq a float si es entero
+         if (!isDerFloat) this.code.fcvtsw(f.FT0, r.T0); // Convertir der a float si es entero
+         
         const verdadero = this.code.getLabel();
         const final = this.code.getLabel();
+
+       
         //Ahora los operadores y de cumplirse salta a verdadero 
-        const operadores = {
-            '>' : () => this.code.blt(r.T0,r.T1,verdadero),
-            '>=' : () => this.code.bge(r.T1,r.T0,verdadero),
-            '<' : () => this.code.blt(r.T1,r.T0,verdadero),
-            '<=' : () => this.code.bge(r.T0,r.T1,verdadero)   
-        }
+         const operadores = {
+            '>': () => {
+                this.code.flts(r.T0, f.FT0, f.FT1); // Comparar si FT1 < FT0
+                this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+            },
+            '>=': () => {
+                this.code.fles(r.T0, f.FT1, f.FT0); // Comparar si FT0 <= FT1
+                this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+            },
+            '<': () => {
+                this.code.flts(r.T0, f.FT1, f.FT0); // Comparar si FT0 < FT1
+                this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+            },
+            '<=': () => {
+                this.code.fles(r.T0, f.FT0, f.FT1); // Comparar si FT1 <= FT0
+                this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+            }
+        };
         operadores[node.op]();
         //Si no se cumple Continua
         //Ahora la parte falsa retorna 0 y brinca al final
@@ -258,18 +291,19 @@ export class CompilerVisitor extends BaseVisitor {
      */
     visitOperacionUnaria(node) {
         node.exp.accept(this);
-
-        this.code.popObject(r.T0);
-
-        switch (node.op) {
-            case '-':
-                this.code.li(r.T1, 0);
-                this.code.sub(r.T0, r.T1, r.T0);
-                this.code.push(r.T0);
-                this.code.pushObject({ type: 'int', length: 4 });
-                break;
+        const isDerFloat = this.code.getTopObject().type === 'float';
+        this.code.popObject(isDerFloat ? f.FT0 : r.T0);  
+        if (isDerFloat) {
+            this.code.li(r.T1, 0);
+            this.code.fcvtsw(f.FT1, r.T1);
+            this.code.fsub(f.FT0, f.FT1, f.FT0);
+            this.code.pushFloat(f.FT0);
+            this.code.pushObject({ type: 'float', length: 4 });
+        }else{
+            this.code.sub(r.T0, r.ZERO, r.T0);
+            this.code.push(r.T0);
+            this.code.pushObject({ type: 'int', length: 4 });
         }
-
     }
 
     /**
@@ -342,7 +376,7 @@ export class CompilerVisitor extends BaseVisitor {
         if( valueObject.type == 'float'){
             const [offset, variableObject] = this.code.getObject(node.id);
             this.code.addi(r.T1, r.SP, offset);
-            this.code.sw(r.T0, r.T1);
+            this.code.fsw(f.FT0, r.T1);
             variableObject.type = valueObject.type;
             this.code.pushFloat(f.FT0);
         }else{
