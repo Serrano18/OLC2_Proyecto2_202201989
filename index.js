@@ -4,6 +4,7 @@ import { CompilerVisitor } from './Compilador/compilador.js';
 
 document.getElementById('new-file').addEventListener('click', createNewFile);
 document.getElementById('save-file').addEventListener('click', saveFile);
+document.getElementById('save-run').addEventListener('click', runsave);
 document.getElementById('open-file').addEventListener('click', () => document.getElementById('file-input').click());
 document.getElementById('file-input').addEventListener('change', openFile);
 document.getElementById('Rerrores').addEventListener('click', createRerrores);
@@ -94,6 +95,27 @@ function saveFile() {
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = activeTab.name;
+    link.click();
+}
+
+function runsave(){
+    const fileContent = document.getElementById('consoleOutput').value;
+    const blob = new Blob([fileContent], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    
+    // Solicitar al usuario el nombre del archivo
+    let fileName = prompt("Por favor, ingresa el nombre del archivo:");
+
+    // Si el usuario no ingresó un nombre, usar un nombre predeterminado
+    if (!fileName) {
+        fileName = "archivo";
+    }
+
+    // Añadir la extensión .s si no la tiene
+    link.download = fileName.endsWith('.asm') ? fileName : `${fileName}.asm`;
+
+    // Descargar el archivo
     link.click();
 }
 

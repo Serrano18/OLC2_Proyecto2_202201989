@@ -1,4 +1,4 @@
-import { registers as r } from "../RISC/constantes.js"
+import { registers as r , floatRegisters as f} from "../RISC/constantes.js"
 import { Generador } from "../RISC/generador.js"
 
 /**
@@ -30,11 +30,12 @@ export const comparacionString = (code) => {
     //Ahora la parte final 
     code.addLabel(end1)
     code.li(r.T0, 0) 
-
-
-
-
 }
+
+
+
+
+
 export const concatString = (code) => {
     // A0 -> dirección en heap de la primera cadena
     // A1 -> dirección en heap de la segunda cadena
@@ -72,82 +73,82 @@ export const concatString = (code) => {
     code.addi(r.HP, r.HP, 1)
 }
 export const menorque = (code) => {
-    const verdadero = this.code.getLabel();
-    const final = this.code.getLabel();
+    const verdadero = code.getLabel();
+    const final = code.getLabel();
     //operador y comparacoio
-    this.code.flts(r.T0, f.FT1, f.FT0); // Comparar si FT0 < FT1
-    this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+    code.flts(r.T0, f.FT1, f.FT0); // Comparar si FT0 < FT1
+    code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
     //Ahora la parte falsa retorna 0 y brinca al final       
-    this.code.li(r.T0, 0);
-    this.code.push(r.T0);
-    this.code.j(final);
+    code.li(r.T0, 0);
+    code.push(r.T0);
+    code.j(final);
 
     //Ahora la parte verdadera retorna 1
-    this.code.addLabel(verdadero);
-    this.code.li(r.T0, 1);
-    this.code.push(r.T0)
+    code.addLabel(verdadero);
+    code.li(r.T0, 1);
+    code.push(r.T0)
 
     //Etiqueta final y pushOBJETO BOOLEANO
-    this.code.addLabel(final);
+    code.addLabel(final);
 }
 
 export const mayorque = (code) => {
-    const verdadero = this.code.getLabel();
-    const final = this.code.getLabel();
+    const verdadero = code.getLabel();
+    const final = code.getLabel();
     //operador y comparacoio
-    this.code.flts(r.T0, f.FT0, f.FT1); // Comparar si FT1 < FT0
-    this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+    code.flts(r.T0, f.FT0, f.FT1); // Comparar si FT1 < FT0
+    code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
     //Ahora la parte falsa retorna 0 y brinca al final       
-    this.code.li(r.T0, 0);
-    this.code.push(r.T0);
-    this.code.j(final);
+    code.li(r.T0, 0);
+    code.push(r.T0);
+    code.j(final);
 
     //Ahora la parte verdadera retorna 1
-    this.code.addLabel(verdadero);
-    this.code.li(r.T0, 1);
-    this.code.push(r.T0)
+    code.addLabel(verdadero);
+    code.li(r.T0, 1);
+    code.push(r.T0)
 
     //Etiqueta final y pushOBJETO BOOLEANO
-    this.code.addLabel(final);
+    code.addLabel(final);
 }
 export const menorIgual = (code) => {
-    const verdadero = this.code.getLabel();
-    const final = this.code.getLabel();
+    const verdadero = code.getLabel();
+    const final = code.getLabel();
     //operador y comparacoio
-    this.code.fles(r.T0, f.FT0, f.FT1); // Comparar si FT1 <= FT0
-    this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+    code.fles(r.T0, f.FT1, f.FT0); // Comparar si FT1 <= FT0
+    code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
     //Ahora la parte falsa retorna 0 y brinca al final       
-    this.code.li(r.T0, 0);
-    this.code.push(r.T0);
-    this.code.j(final);
+    code.li(r.T0, 0);
+    code.push(r.T0);
+    code.j(final);
 
     //Ahora la parte verdadera retorna 1
-    this.code.addLabel(verdadero);
-    this.code.li(r.T0, 1);
-    this.code.push(r.T0)
+    code.addLabel(verdadero);
+    code.li(r.T0, 1);
+    code.push(r.T0)
 
     //Etiqueta final y pushOBJETO BOOLEANO
-    this.code.addLabel(final);
+    code.addLabel(final);
 }
 
 export const mayorIgual = (code) => {
-    const verdadero = this.code.getLabel();
-    const final = this.code.getLabel();
+    const verdadero = code.getLabel();
+    const final = code.getLabel();
     //operador y comparacoio
-    this.code.fles(r.T0, f.FT1, f.FT0); // Comparar si FT0 <= FT1
-    this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+    code.fles(r.T0, f.FT0, f.FT1); // Comparar si FT0 <= FT1
+    code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
     //Ahora la parte falsa retorna 0 y brinca al final       
-    this.code.li(r.T0, 0);
-    this.code.push(r.T0);
-    this.code.j(final);
+    code.li(r.T0, 0);
+    code.push(r.T0);
+    code.j(final);
 
     //Ahora la parte verdadera retorna 1
-    this.code.addLabel(verdadero);
-    this.code.li(r.T0, 1);
-    this.code.push(r.T0)
+    code.addLabel(verdadero);
+    code.li(r.T0, 1);
+    code.push(r.T0)
 
     //Etiqueta final y pushOBJETO BOOLEANO
-    this.code.addLabel(final);
+    code.addLabel(final);
 }
 export const builtins = {
     concatString: concatString,

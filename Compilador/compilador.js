@@ -121,43 +121,23 @@ export class CompilerVisitor extends BaseVisitor {
          if (!isIzqFloat) this.code.fcvtsw(f.FT1, r.T1); // Convertir izq a float si es entero
          if (!isDerFloat) this.code.fcvtsw(f.FT0, r.T0); // Convertir der a float si es entero
          
-        const verdadero = this.code.getLabel();
-        const final = this.code.getLabel();
-
-       
         //Ahora los operadores y de cumplirse salta a verdadero 
          const operadores = {
             '>': () => {
-                this.code.flts(r.T0, f.FT0, f.FT1); // Comparar si FT1 < FT0
-                this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+                this.code.callBuiltin('mayorque')
             },
             '>=': () => {
-                this.code.fles(r.T0, f.FT1, f.FT0); // Comparar si FT0 <= FT1
-                this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+                this.code.callBuiltin('mayorIgual')
             },
             '<': () => {
-                this.code.flts(r.T0, f.FT1, f.FT0); // Comparar si FT0 < FT1
-                this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+                this.code.callBuiltin('menorque')
             },
             '<=': () => {
-                this.code.fles(r.T0, f.FT0, f.FT1); // Comparar si FT1 <= FT0
-                this.code.bne(r.T0, r.ZERO, verdadero); // Si es verdadero, saltar
+                this.code.callBuiltin('menorIgual')
             }
         };
         operadores[node.op]();
-        //Si no se cumple Continua
-        //Ahora la parte falsa retorna 0 y brinca al final
-        this.code.li(r.T0, 0);
-        this.code.push(r.T0);
-        this.code.j(final);
 
-        //Ahora la parte verdadera retorna 1
-        this.code.addLabel(verdadero);
-        this.code.li(r.T0, 1);
-        this.code.push(r.T0)
-
-        //Etiqueta final y pushOBJETO BOOLEANO
-        this.code.addLabel(final);
         this.code.pushObject({type:'boolean',length:4});
         this.code.comment(`#Fin Operacion Relacional: ${node.op}`);
     }
