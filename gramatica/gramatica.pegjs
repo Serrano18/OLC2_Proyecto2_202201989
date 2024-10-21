@@ -339,7 +339,7 @@ reservadas = "int" / "float" / "string" / "char" / "boolean" / "true" / "false" 
  / "return" / "for" / "while" / "print" / "System.out.println"  / "new" / "null"  
 
 
-separadores = "(" / ")" / "{" / "}" / "[" / "]" / "," / ";" / "." 
+separadores = [ \t\n\r]+ /"(" / ")" / "{" / "}" / "[" / "]" / "," / ";" / "." 
 / ":" / "?" / "!" / "=" / "==" / "!=" / "<" / "<=" / ">" / ">="
  / "+" / "-" / "*" / "/" / "%" / "&&" / "||" / "!" / "+="
   / "-=" / "*=" / "/=" / "%=" / "++" / "--" 

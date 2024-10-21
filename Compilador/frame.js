@@ -91,4 +91,5 @@ export class FrameVisitor extends BaseVisitor {
     visitNegacion(node){}
     visitReferenciaVariable(node){}
     visitTypeOf(node){}
+    visitComentarios(node){}
 }

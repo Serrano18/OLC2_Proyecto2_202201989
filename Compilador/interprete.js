@@ -444,7 +444,7 @@ export class InterpreterVisitor extends BaseVisitor{
    // let  tipoS = "Struct"
     //this.simbolos.push({id: node.id, tsim: tipoS, tipod: node.id, linea: node.location.start.line, columna: node.location.start.column}) 
   }
-       
+  visitComentarios(node){}
   
   /**
      * @type {BaseVisitor['visitBreak']}

@@ -336,26 +336,17 @@ export class CompilerVisitor extends BaseVisitor {
         if(this.insideFunction){
             const localObject = this.code.getFrameLocal(this.frameDclIndex);
             const valueObj = this.code.popObject(r.T0);
-
             this.code.addi(r.T1, r.FP, -localObject.offset * 4);
             this.code.sw(r.T0, r.T1);
-
             // ! inferir el tipo
             localObject.type = valueObj.type;
             this.frameDclIndex++;
-
             return
         }
         if ( node.exp){
-            let expr = node.exp.accept(this)
-            if (node.tipo == 'var' ||(node.tipo === 'float' && exp === 'int')) {
-                //aqui no pasa nada
-            } else if (node.tipo !== expr.tipo){ 
-                // Asignar null si los tipos no coinciden (excepto el caso de int a float)
-                this.code.comment(`# Error: tipo incompatible para ${node.id}, se asigna null`);
-                const primitivo = new nodos.Primitivo({ tipo: node.tipo, valor: 0 });
-                primitivo.accept(this);
-            }
+           // let expr = node.exp.accept(this)
+           node.exp.accept(this)
+    
         }else{
             //aqui que guardar null en el stack 0
             const primitivo = new nodos.Primitivo({tipo:node.tipo,valor:0})
@@ -387,6 +378,9 @@ export class CompilerVisitor extends BaseVisitor {
             this.code.sw(r.T0, r.T1); // ! revisar
             return
         }
+        
+      
+
         if( valueObject.type == 'float'){
             this.code.addi(r.T1, r.SP, offset);
             this.code.fsw(f.FT0, r.T1);
