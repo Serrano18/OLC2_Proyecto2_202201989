@@ -28,6 +28,7 @@ export class Generador {
     constructor() {
         this.instrucciones = []
         this.objectStack = []
+        this.instrucionesDeFunciones = []
         this.depth = 0
         this._usedBuiltins = new Set()
         this._labelCounter = 0
@@ -87,6 +88,9 @@ export class Generador {
     li(rd, inmediato) {
         this.instrucciones.push(new Instruction('li', rd, inmediato))
     }
+    la(rd, label) {
+        this.instrucciones.push(new Instruction('la', rd, label))
+    }
 
     seqz(rd, rs1) {
         this.instrucciones.push(new Instruction('seqz', rd, rs1))
@@ -135,6 +139,9 @@ export class Generador {
     pop(rd = r.T0) {
         this.lw(rd, r.SP)
         this.addi(r.SP, r.SP, 4)
+    }
+    jalr(rd, rs1, imm) {
+        this.instrucciones.push(new Instruction('jalr', rd, rs1, imm))
     }
     
     jal(label) {
@@ -295,6 +302,11 @@ export class Generador {
     }
     pushObject(object) {
         this.objectStack.push(object);
+        // this.objectStack.push(object);
+        this.objectStack.push({
+            ...object,
+            depth: this.depth,
+        });
     }
     popFloat(rd = f.FT0) {
         this.flw(rd, r.SP)
@@ -382,10 +394,16 @@ export class Generador {
         this.ecall()
     }
 
-
+    getFrameLocal(index) {
+        const frameRelativeLocal = this.objectStack.filter(obj => obj.type === 'local');
+        return frameRelativeLocal[index];
+    }
+    
     toString() {
         this.endProgram()
         this.comment('#Builtins')
+        this.comment('#Funciones foraneas')
+        this.instrucionesDeFunciones.forEach(instruccion => this.instrucciones.push(instruccion))
 
         Array.from(this._usedBuiltins).forEach(builtinName => {
             this.addLabel(builtinName)
