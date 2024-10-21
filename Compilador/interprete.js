@@ -109,9 +109,6 @@ export class InterpreterVisitor extends BaseVisitor{
         }
 
     }
-    visitComentarios(node){
-      return
-    }
     /**
       * @type {BaseVisitor['visitAgrupacion']}
     */
@@ -501,4 +498,3 @@ export class InterpreterVisitor extends BaseVisitor{
 
 
 }
-
