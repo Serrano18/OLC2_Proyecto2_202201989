@@ -654,7 +654,7 @@ export class CompilerVisitor extends BaseVisitor {
                 const tipoPrint = {
                     'int': () => this.code.callBuiltin('printint'),
                     'string': () => this.code.printString(),
-                    'char': () => this.code.printChar(),
+                    'char': () => this.code.callBuiltin('printch'),
                     'boolean': () => this.code.printInt(),
                     'float': () => this.code.printFloat(),
                 }
