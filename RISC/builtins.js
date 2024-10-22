@@ -237,6 +237,115 @@ export const mayorIgual = (code) => {
     //Etiqueta final y pushOBJETO BOOLEANO
     code.addLabel(final);
 }
+
+
+
+export const toLowerCase = (code) => {
+    // A0 -> dirección en heap de la primera cadena
+    // result -> push en el stack la dirección en heap de la cadena convertida a minúsculas
+    code.comment('#Saving in the stack the heap address of the resulting string (converted to lowercase)')
+    code.push(r.HP);
+    code.comment('#Copying the string to the heap')
+
+    const end = code.getLabel()
+    const loop = code.getLabel()
+    const noConvert = code.getLabel()
+    const convert = code.getLabel()
+    const nextChar = code.getLabel()
+
+    code.addLabel(loop)
+
+    code.lb(r.T1, r.A0)
+    code.beq(r.T1, r.ZERO, end)
+
+    // Caracteres de A-Z
+    code.li(r.T2, 65)
+    code.li(r.T3, 90)
+
+    // Menor que A, no se convierte
+    code.blt(r.T1, r.T2, noConvert)
+    // Mayor que Z, no se convierte
+    code.bgt(r.T1, r.T3, noConvert)
+
+    // Aqui, el caracter es Mayúscula
+    code.j(convert)
+
+    // noConvert -> copiar el caracter tal cual
+    code.addLabel(noConvert)
+    code.sb(r.T1, r.HP)
+    // nextChar -> siguiente caracter
+    code.addLabel(nextChar)
+    code.addi(r.HP, r.HP, 1)
+    code.addi(r.A0, r.A0, 1)
+    code.j(loop)
+
+    // convert -> convertir el caracter a minúscula
+    code.addLabel(convert)
+    code.addi(r.T1, r.T1, 32)
+    code.sb(r.T1, r.HP)
+
+    code.j(nextChar)
+    code.addLabel(end)
+    code.sb(r.ZERO, r.HP)
+    code.addi(r.HP, r.HP, 1)
+
+    code.comment('#End of the string')
+    
+}
+
+export const toUpperCase = (code) => {
+    // A0 -> dirección en heap de la primera cadena
+    // result -> push en el stack la dirección en heap de la cadena convertida a mayúsculas
+    code.comment('#Saving in the stack the heap address of the resulting string (converted to uppercase)')
+    code.push(r.HP);
+    code.comment('#Copying the string to the heap')
+
+    const end = code.getLabel()
+    const loop = code.getLabel()
+    const noConvert = code.getLabel()
+    const convert = code.getLabel()
+    const nextChar = code.getLabel()
+
+    code.addLabel(loop)
+
+    code.lb(r.T1, r.A0)
+    code.beq(r.T1, r.ZERO, end)
+
+    // Caracteres de a-z
+    code.li(r.T2, 97)
+    code.li(r.T3, 122)
+
+    // Menor que A, no se convierte
+    code.blt(r.T1, r.T2, noConvert)
+    // Mayor que Z, no se convierte
+    code.bgt(r.T1, r.T3, noConvert)
+    
+    // Aqui, el caracter es minúscula
+    code.j(convert)
+
+    // noConvert -> copiar el caracter tal cual
+    code.addLabel(noConvert)
+    code.sb(r.T1, r.HP)
+    // nextChar -> siguiente caracter
+    code.addLabel(nextChar)
+    code.addi(r.HP, r.HP, 1)
+    code.addi(r.A0, r.A0, 1)
+    code.j(loop)
+
+    // convert -> convertir el caracter a mayúscula
+    code.addLabel(convert)
+    code.addi(r.T1, r.T1, -32)
+    code.sb(r.T1, r.HP)
+
+    code.j(nextChar)
+    code.addLabel(end)
+    code.sb(r.ZERO, r.HP)
+    code.addi(r.HP, r.HP, 1)
+
+    code.comment('End of the string')
+}
+
+
 export const builtins = {
     concatString: concatString,
     comparacionString: comparacionString,
