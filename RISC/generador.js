@@ -355,6 +355,9 @@ export class Generador {
     fmul(rd, rs1, rs2) {
         this.instrucciones.push(new Instruction('fmul.s', rd, rs1, rs2))
     }
+    mv(rd, rs1) {
+        this.instrucciones.push(new Instruction('mv', rd, rs1))
+    }
 
     fdiv(rd, rs1, rs2) {
         this.instrucciones.push(new Instruction('fdiv.s', rd, rs1, rs2))

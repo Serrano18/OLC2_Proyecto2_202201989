@@ -6,19 +6,54 @@ import { Generador } from "../RISC/generador.js"
  */
 
 export const comparacionString = (code) => {
+
+    code.comment('# Inicio comparación de cadenas');
+    
+    // No necesitamos hacer add aquí porque ya recibimos las direcciones en A0 y A1
+    
+    const endLabel = code.getLabel();
+    const equalLabel = code.getLabel();
+    const notEqualLabel = code.getLabel();
+    const loopLabel = code.getLabel();
+    code.addLabel(loopLabel);
+    // Cargar bytes de ambas cadenas
+    code.lb(r.T1, r.A0);
+    code.lb(r.T2, r.A1);
+    // Si son diferentes, no son iguales
+    code.bne(r.T1, r.T2, notEqualLabel);
+        
+    // Si ambos son cero, son iguales
+    code.beq(r.T1, r.ZERO, equalLabel);
+    
+    // Avanzar al siguiente carácter
+    code.addi(r.A0, r.A0, 1);
+    code.addi(r.A1, r.A1, 1);
+    code.j(loopLabel);
+
+    // Las cadenas son iguales
+    code.addLabel(equalLabel);
+    code.li(r.T0, 1);  // 1 significa iguales
+    code.j(endLabel);
+
+      // Las cadenas son diferentes
+      code.addLabel(notEqualLabel);
+      code.li(r.T0, 0);  // 0 significa diferentes
+      
+     code.addLabel(endLabel);
   // A0 -> dirección en heap de la primera cadena
     // A1 -> dirección en heap de la segunda cadena
-    code.comment('# Inicio de la comparación de cadenas')
+    /*code.comment('# Inicio de la comparación de cadenas')
     const end1 = code.getLabel()
     const verdadero = code.getLabel()
     const loop1 = code.getLabel()
+    
     //inicio del ciclo
     code.addLabel(loop1)
     //Cargar byte en t1 y t2
     code.lb(r.T1, r.A0)
     code.lb(r.T2, r.A1)
     //Verificar que sean iguales
-    code.beq(r.T2,r.T1,verdadero)
+    code.beq(r.T1,r.T2,verdadero)
     //Si no es verdadero entonces r.t0 es 1
 	code.li(r.T0,1)
 	code.j(end1)
@@ -29,7 +64,7 @@ export const comparacionString = (code) => {
 
     //Ahora la parte final 
     code.addLabel(end1)
-    code.li(r.T0, 0) 
+    code.li(r.T0, 0) */
 }
 
 

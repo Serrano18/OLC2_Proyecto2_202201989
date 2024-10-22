@@ -61,20 +61,25 @@ export class CompilerVisitor extends BaseVisitor {
         node.izq.accept(this);
         node.der.accept(this);
         //variables de la pila
-        const isDerFloat = this.code.getTopObject().type === 'float';
+        const isDerFloat = this.code.getTopObject().type === 'float';//t1
         const der = this.code.popObject(isDerFloat ? f.FT0 : r.T0); // der
-        const isIzqFloat = this.code.getTopObject().type === 'float';
+        const isIzqFloat = this.code.getTopObject().type === 'float';//t0
         const izq = this.code.popObject(isIzqFloat ? f.FT1 : r.T1); // izq
         //etiquetas de saltos
         const verdadero = this.code.getLabel();
         const final = this.code.getLabel();
+
         if (izq.type === 'string' && der.type === 'string') {
-            this.code.add(r.A0, r.ZERO, r.T1);
-            this.code.add(r.A1, r.ZERO, r.T2);
+            this.code.add(r.A0, r.ZERO, r.T0);
+            this.code.add(r.A1, r.ZERO, r.T1);
+             // Mover las direcciones correctamente
+           // this.code.mv(r.A0, r.T1)  // Cambiado de add a mv
+            //this.code.mv(r.A1, r.T0)  // Cambiado de add a mv
+
             this.code.callBuiltin('comparacionString')
             const operadores = {
-                '==': () => this.code.beq(r.T0,r.ZERO,verdadero),
-                '!=': () => this.code.bne(r.T0,r.ZERO,verdadero)
+                '==': () => this.code.bne(r.T0,r.ZERO,verdadero),
+                '!=': () => this.code.beq(r.T0,r.ZERO,verdadero)
             }
             operadores[node.op]();
         
