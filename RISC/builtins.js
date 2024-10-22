@@ -91,6 +91,72 @@ export const menorque = (code) => {
     //Etiqueta final y pushOBJETO BOOLEANO
     code.addLabel(final);
 }
+export const printch = (code) => {
+    const l1 = code.getLabel()
+        
+ 
+    code.li(r.A1,196)
+    code.beq(r.A0,r.A1,l1) //==
+
+    //Falsa
+    code.li(r.A7, 11)
+    code.ecall()
+
+    code.ret()
+    //Verdadera
+    code.addLabel(l1)
+    code.la(r.A1, 'null')
+    code.li(r.A0,  1)
+    code.li(r.A2, 5)
+    code.li(r.A7, 64)
+    code.ecall()
+}
+export const printFloat = (code) => {
+    const l1 = code.getLabel()
+
+    code.fcvtws(r.A3,f.FA0)
+    code.li(r.A1,1234567936)
+    code.beq(r.A3,r.A1,l1) //==
+
+    //Falsa
+    code.li(r.A7, 2)
+    code.ecall()
+
+
+    code.ret()
+    //Verdadera
+    code.addLabel(l1)
+    code.la(r.A1, 'null')
+    code.li(r.A0,  1)
+    code.li(r.A2, 5)
+    code.li(r.A7, 64)
+    code.ecall()
+
+}
+
+export const printint = (code) => {
+    const l1 = code.getLabel()
+
+
+    code.li(r.A1,1234567890)
+    code.beq(r.A0,r.A1,l1) //==
+
+    //Falsa
+    code.li(r.A7, 1)
+    code.ecall()
+
+
+    code.ret()
+    //Verdadera
+    code.addLabel(l1)
+    code.la(r.A1, 'null')
+    code.li(r.A0,  1)
+    code.li(r.A2, 5)
+    code.li(r.A7, 64)
+    code.ecall()
+
+}
+
 
 export const mayorque = (code) => {
     const verdadero = code.getLabel();
@@ -156,5 +222,9 @@ export const builtins = {
     menorque: menorque,
     mayorque: mayorque,
     menorIgual: menorIgual,
-    mayorIgual: mayorIgual
+    mayorIgual: mayorIgual,
+    printch: printch,
+    printint: printint,
+    printFloat: printFloat,
+
 }

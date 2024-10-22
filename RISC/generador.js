@@ -182,7 +182,6 @@ export class Generador {
     }
 
     printInt(rd = r.A0) {
-
         if (rd !== r.A0) {
             this.push(r.A0)
             this.add(r.A0, rd, r.ZERO)
@@ -194,15 +193,16 @@ export class Generador {
         if (rd !== r.A0) {
             this.pop(r.A0)
         }
-
     }
 
     printString(rd = r.A0) {
 
+        
         if (rd !== r.A0) {
             this.push(r.A0)
             this.add(r.A0, rd, r.ZERO)
         }
+
 
         this.li(r.A7, 4)
         this.ecall()
@@ -210,6 +210,7 @@ export class Generador {
         if (rd !== r.A0) {
             this.pop(r.A0)
         }
+
     }
 
     endProgram() {
@@ -301,7 +302,6 @@ export class Generador {
         this.pushObject({ type: object.type, length, depth:this.depth });
     }
     pushObject(object) {
-        this.objectStack.push(object);
         // this.objectStack.push(object);
         this.objectStack.push({
             ...object,
@@ -383,6 +383,9 @@ export class Generador {
     fcvtsw(rd, rs1) {
         this.instrucciones.push(new Instruction('fcvt.s.w', rd, rs1))
     }
+    fcvtws(rd, rs1) {
+        this.instrucciones.push(new Instruction('fcvt.w.s', rd, rs1))
+    }
     flts(rd, rs1,rs2) {
         this.instrucciones.push(new Instruction('flt.s', rd, rs1,rs2))
     }
@@ -412,6 +415,7 @@ export class Generador {
         })
 
         return `.data
+            null: .string "null\\n"
         heap:
 .text
         la ${r.HP}, heap

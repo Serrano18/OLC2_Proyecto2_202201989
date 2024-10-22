@@ -181,7 +181,7 @@ function run(){
                 }
                 //salida.innerHTML = compilador.code;
                 //salida.innerHTML = interprete?.salida || "";
-                console.log(interprete.salida)
+                //console.log(interprete.salida)
             }catch(error){
                 console.log(error)
                 errores.push({
@@ -206,7 +206,7 @@ function run(){
 
         salida.innerHTML += error.message + ' at line ' + error.location.start.line + ' column ' + error.location.start.column
    }
-   if(errores.length == 0){
+  
     try {
         const sentencias = parse(code);
         const compilador = new CompilerVisitor();
@@ -216,7 +216,6 @@ function run(){
     } catch (error) {
         console.log(error)
     }
-   }
 }
 // Actualizar el contenido del archivo actual al escribir
 document.getElementById('codeEditor').addEventListener('input', () => {

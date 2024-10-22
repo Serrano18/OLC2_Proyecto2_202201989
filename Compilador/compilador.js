@@ -32,9 +32,9 @@ export class CompilerVisitor extends BaseVisitor {
      * @type {BaseVisitor['visitPrimitivo']}
      */
     visitPrimitivo(node) {
-        //this.code.comment(`Primitivo: ${node.valor}`);
+        this.code.comment(`#Primitivo: ${node.valor}`);
         this.code.pushConstant({ type: node.tipo, valor: node.valor });
-        //this.code.comment(`Fin Primitivo: ${node.valor}`);
+        this.code.comment(`#Fin Primitivo: ${node.valor}`);
     }
     
 
@@ -308,9 +308,9 @@ export class CompilerVisitor extends BaseVisitor {
         const tipoPrint = {
             'int': () => this.code.printInt(),
             'string': () => this.code.printString(),
-            'char': () => this.code.printChar(),
+            'char': () => this.code.callBuiltin('printch'),
             'boolean': () => this.code.printInt(),
-            'float': () => this.code.printFloat(),
+            'float': () => this.code.callBuiltin('printFloat'),
         }
 
         tipoPrint[object.type]();
@@ -344,13 +344,34 @@ export class CompilerVisitor extends BaseVisitor {
             return
         }
         if ( node.exp){
-           // let expr = node.exp.accept(this)
            node.exp.accept(this)
-    
+           const valor = this.code.getTopObject();
+           console.log("valor objeto",valor.type)
+           console.log("valor nod",node.tipo)
+           if(valor.type !== node.tipo){
+            console.log("valor objeto",valor.type)
+            console.log("valor nod",node.tipo)
+                if (node.tipo !== 'var'){
+                    this.code.popObject(r.T0);
+                    if (node.tipo == 'char'){
+                        const primitivo = new nodos.Primitivo({tipo:node.tipo,valor:'Ä'})
+                        primitivo.accept(this)
+                    }else{
+                        const primitivo = new nodos.Primitivo({tipo:node.tipo,valor:1234567890})
+                        primitivo.accept(this)
+                    }
+                }
+           }
         }else{
             //aqui que guardar null en el stack 0
-            const primitivo = new nodos.Primitivo({tipo:node.tipo,valor:0})
-            primitivo.accept(this)
+            if (node.tipo == 'char'){
+                const primitivo = new nodos.Primitivo({tipo:node.tipo,valor:'Ä'})
+                primitivo.accept(this)
+            }else{
+                const primitivo = new nodos.Primitivo({tipo:node.tipo,valor:1234567890})
+                primitivo.accept(this)
+            }
+          
         }
         
         this.code.tagObject(node.id);
@@ -372,15 +393,12 @@ export class CompilerVisitor extends BaseVisitor {
         const valueObject = this.code.popObject(isFloat ? f.FT0 : r.T0);
         const [offset, variableObject] = this.code.getObject(node.id);
         
-
         if (this.insideFunction) {
             this.code.addi(r.T1, r.FP, -variableObject.offset * 4); // ! REVISAR
             this.code.sw(r.T0, r.T1); // ! revisar
             return
         }
         
-      
-
         if( valueObject.type == 'float'){
             this.code.addi(r.T1, r.SP, offset);
             this.code.fsw(f.FT0, r.T1);
@@ -566,12 +584,12 @@ export class CompilerVisitor extends BaseVisitor {
         const startForLabel = this.code.getLabel();
 
         const endForLabel = this.code.getLabel();
-        const prevBreakLabel = this.breakLabel;
-        this.breakLabel = endForLabel;
+        const prevBreakLabel = this.lbreak;
+        this.lbreak = endForLabel;
 
         const incrementLabel = this.code.getLabel();
-        const prevContinueLabel = this.continueLabel;
-        this.continueLabel = incrementLabel;
+        const prevContinueLabel = this.lcontinue;
+        this.lcontinue = incrementLabel;
 
         this.code.newScope();
 
@@ -601,8 +619,8 @@ export class CompilerVisitor extends BaseVisitor {
             this.code.addi(r.SP, r.SP, bytesToRemove);
         }
 
-        this.continueLabel = prevContinueLabel;
-        this.breakLabel = prevBreakLabel;
+        this.lcontinue = prevContinueLabel;
+        this.lbreak = prevBreakLabel;
 
         this.code.comment('#Fin de For');
     }
@@ -623,7 +641,16 @@ export class CompilerVisitor extends BaseVisitor {
 
                 const isFloat = this.code.getTopObject().type === 'float';
                 const object = this.code.popObject(isFloat ? f.FA0 : r.A0);
-        
+                //si el objeto A0 es null 1234567890 || si el objeto fA0 es null 1234567890
+
+                
+                /* .data nullo = null
+                                    this.code.li(r.A0, 10);
+                this.code.li(r.A7, 11);
+                this.code.ecall(); 
+                return
+                */
+                
                 const tipoPrint = {
                     'int': () => this.code.printInt(),
                     'string': () => this.code.printString(),
