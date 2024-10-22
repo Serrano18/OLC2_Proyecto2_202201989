@@ -207,7 +207,7 @@ export class CompilerVisitor extends BaseVisitor {
      * @type {BaseVisitor['visitOperacionAritmetica']}
      */
     visitOperacionAritmetica(node) {
-        //this.code.comment(`Operacion: ${node.op}`);
+        this.code.comment(`#Operacion: ${node.op}`);
         node.izq.accept(this);
         node.der.accept(this);
 
@@ -259,7 +259,20 @@ export class CompilerVisitor extends BaseVisitor {
                 this.code.push(r.T0);
                 break;
             case '/':
+                //etiqueta
+                const verdadero = this.code.getLabel();
+                const fin = this.code.getLabel();
+                //condicion de que sea 0
+                this.code.beq(r.T0, r.ZERO, verdadero);
+                //parte falsa
                 this.code.div(r.T0, r.T1, r.T0);
+                this.code.j(fin);
+                //parte verdadera
+                this.code.addLabel(verdadero);
+                this.code.li(r.T0, 1234567890);
+                
+                this.code.addLabel(fin);
+
                 this.code.push(r.T0);
                 break;
             case '%':
@@ -269,6 +282,7 @@ export class CompilerVisitor extends BaseVisitor {
 
         }
         this.code.pushObject({ type: izq.type, length: 4 });
+        this.code.comment(`#Fin Operacion: ${node.op}`);
     }
 
     /**
