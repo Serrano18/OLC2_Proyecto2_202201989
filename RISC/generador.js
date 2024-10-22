@@ -433,6 +433,7 @@ export class Generador {
             string:  .string "string\\0"
             boolean: .string "boolean\\0"
             char:    .string "char\\0"
+            error:  .string "Error "
         heap:
 .text
         la ${r.HP}, heap

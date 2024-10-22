@@ -19,7 +19,7 @@ export const fnativas = {
         
         if(args[0].tipo != 'string'){  
             errores.push({
-                desc: "Error en la conversion a string",
+                desc: "Error en la conversion a Int",
                 tipo: "Semantico", // Puedes agregar un tipo si lo deseas
                 linea: args[0].location?.start.line || "Desconocido",
                 columna:  args[0].location?.start.column || "Desconocido"
@@ -33,7 +33,7 @@ export const fnativas = {
             
             if(args[0].tipo != 'string'){  
                 errores.push({
-                    desc: "Error en la conversion a string",
+                    desc: "Error en la conversion a Float",
                     tipo: "Semantico", // Puedes agregar un tipo si lo deseas
                     linea: args[0].location?.start.line || "Desconocido",
                     columna:  args[0].location?.start.column || "Desconocido"

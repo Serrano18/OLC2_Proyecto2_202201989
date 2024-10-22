@@ -38,7 +38,7 @@ export const comparacionString = (code) => {
       // Las cadenas son diferentes
       code.addLabel(notEqualLabel);
       code.li(r.T0, 0);  // 0 significa diferentes
-      
+
      code.addLabel(endLabel);
   // A0 -> dirección en heap de la primera cadena
     // A1 -> dirección en heap de la segunda cadena
@@ -378,6 +378,13 @@ export const toUpperCase = (code) => {
 
     code.comment('#Fin ToUpperCase')
 }
+export const printerror = (code) => {
+    code.la(r.A1, 'error')
+    code.li(r.A0,  1)
+    code.li(r.A2, 5)
+    code.li(r.A7, 64)
+    code.ecall()
+}
 
 export const parseInt = (code) => {
     code.comment('# Inicio parseInt')
@@ -474,5 +481,7 @@ export const builtins = {
     toUpperCase: toUpperCase,
     parseInt: parseInt,
     parsefloat: parsefloat,
+    printerror: printerror,
+    
 
 }

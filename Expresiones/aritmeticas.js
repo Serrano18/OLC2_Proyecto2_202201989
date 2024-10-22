@@ -1,11 +1,13 @@
 import { Primitivo } from "../Compilador/nodos.js";
 
+import { errores } from "../index.js";
+import { ErrorData } from "../Symbol/errores.js";
 
 export function aritmeticas(op,izq,der){
     
     //Evaluar si los valores son null
     if(izq.valor === null || der.valor === null){
-        throw new Error('Error en la operacion aritmetica valores nulos');
+        throw new ErrorData('Valores null',izq.location);
     }
     //Crear las reglas de operaciones aritmeticas
     const reglas = condiciones[op];
@@ -13,11 +15,18 @@ export function aritmeticas(op,izq,der){
     const tipo = reglas.find(([tipoIzq,tipoDer])=>tipoIzq === izq.tipo && tipoDer === der.tipo);
 
     if(!tipo){
-        throw new Error('Error en la operacion aritmetica tipos incorrectos');
+        throw new ErrorData('Tipos Incorrectos ',izq.location);
     }
     //Verificamos que si la operacion es / o % el valor derecho no sea 0
     if(op === '/' || op === '%'){
         if(der.valor === 0){
+            console.log("Error en la operacion aritmetica division por 0");
+            errores.push({
+                desc: "Error en la operacion aritmetica division por 0",
+                tipo: "Semantico", // Puedes agregar un tipo si lo deseas
+                linea: izq.location.start.line || "Desconocido",
+                columna: izq.location.start.column || "Desconocido"
+            })
             return new Primitivo({valor:null,tipo:'int'});
             //throw new Error('Error en la operacion aritmetica division por 0');
         }

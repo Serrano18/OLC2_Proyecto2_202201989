@@ -276,6 +276,7 @@ export class CompilerVisitor extends BaseVisitor {
                 //parte verdadera
                 this.code.addLabel(verdadero);
                 this.code.li(r.T0, 1234567890);
+                this.code.callBuiltin('printerror')
                 
                 this.code.addLabel(fin);
 
