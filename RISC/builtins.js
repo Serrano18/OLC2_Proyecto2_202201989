@@ -243,9 +243,8 @@ export const mayorIgual = (code) => {
 export const toLowerCase = (code) => {
     // A0 -> dirección en heap de la primera cadena
     // result -> push en el stack la dirección en heap de la cadena convertida a minúsculas
-    code.comment('#Saving in the stack the heap address of the resulting string (converted to lowercase)')
+    code.comment('#Inicio ToLowerCase')
     code.push(r.HP);
-    code.comment('#Copying the string to the heap')
 
     const end = code.getLabel()
     const loop = code.getLabel()
@@ -255,31 +254,31 @@ export const toLowerCase = (code) => {
 
     code.addLabel(loop)
 
-    code.lb(r.T1, r.A0)
+    code.lb(r.T1, r.T0)
     code.beq(r.T1, r.ZERO, end)
 
-    // Caracteres de A-Z
+    // Caracteres ascii de A-Z
     code.li(r.T2, 65)
     code.li(r.T3, 90)
 
-    // Menor que A, no se convierte
+    // Menor que ascii de A tons no se convierte
     code.blt(r.T1, r.T2, noConvert)
-    // Mayor que Z, no se convierte
+    // Mayor que ascii de Z tonns no se convierte
     code.bgt(r.T1, r.T3, noConvert)
 
-    // Aqui, el caracter es Mayúscula
+
     code.j(convert)
 
-    // noConvert -> copiar el caracter tal cual
+    // copiar el caracter tal cual esta en minuscula
     code.addLabel(noConvert)
     code.sb(r.T1, r.HP)
-    // nextChar -> siguiente caracter
+    // Pasamos al siguiente caracter
     code.addLabel(nextChar)
     code.addi(r.HP, r.HP, 1)
-    code.addi(r.A0, r.A0, 1)
+    code.addi(r.T0, r.T0, 1)
     code.j(loop)
 
-    // convert -> convertir el caracter a minúscula
+    // convertir el caracter a minúscula
     code.addLabel(convert)
     code.addi(r.T1, r.T1, 32)
     code.sb(r.T1, r.HP)
@@ -289,16 +288,15 @@ export const toLowerCase = (code) => {
     code.sb(r.ZERO, r.HP)
     code.addi(r.HP, r.HP, 1)
 
-    code.comment('#End of the string')
+    code.comment('#Fin ToLowerCase')
     
 }
 
 export const toUpperCase = (code) => {
-    // A0 -> dirección en heap de la primera cadena
-    // result -> push en el stack la dirección en heap de la cadena convertida a mayúsculas
-    code.comment('#Saving in the stack the heap address of the resulting string (converted to uppercase)')
+    //solo para strings
+
+    code.comment('#Inicio ToUpperCase')
     code.push(r.HP);
-    code.comment('#Copying the string to the heap')
 
     const end = code.getLabel()
     const loop = code.getLabel()
@@ -308,31 +306,32 @@ export const toUpperCase = (code) => {
 
     code.addLabel(loop)
 
-    code.lb(r.T1, r.A0)
+    code.lb(r.T1, r.T0)
     code.beq(r.T1, r.ZERO, end)
 
-    // Caracteres de a-z
+    // Caracteres ascii de a-z
     code.li(r.T2, 97)
     code.li(r.T3, 122)
 
-    // Menor que A, no se convierte
+    // Menor que ascii de  A tons no se convierte
     code.blt(r.T1, r.T2, noConvert)
-    // Mayor que Z, no se convierte
+    // Mayor que ascii de Z tons no se convierte
     code.bgt(r.T1, r.T3, noConvert)
-    
-    // Aqui, el caracter es minúscula
+
+    //casos falsos
     code.j(convert)
 
-    // noConvert -> copiar el caracter tal cual
+    // copiar el caracter tal cual pq esta en mayuscula
     code.addLabel(noConvert)
     code.sb(r.T1, r.HP)
-    // nextChar -> siguiente caracter
+
+    //siguiente caracter
     code.addLabel(nextChar)
     code.addi(r.HP, r.HP, 1)
-    code.addi(r.A0, r.A0, 1)
+    code.addi(r.T0, r.T0, 1)
     code.j(loop)
 
-    // convert -> convertir el caracter a mayúscula
+    //convertir el caracter a mayúscula esta en minuscula
     code.addLabel(convert)
     code.addi(r.T1, r.T1, -32)
     code.sb(r.T1, r.HP)
@@ -342,8 +341,87 @@ export const toUpperCase = (code) => {
     code.sb(r.ZERO, r.HP)
     code.addi(r.HP, r.HP, 1)
 
-    code.comment('End of the string')
+    code.comment('#Fin ToUpperCase')
 }
+
+export const parseInt = (code) => {
+    code.comment('# Inicio parseInt')
+    const inicio = code.getLabel()
+    const fin = code.getLabel()
+
+    code.add(r.A0,r.ZERO,r.T0)
+    code.li(r.T0,0)
+    code.li(r.T1,0)
+    code.li(r.T2,0)
+    code.li(r.T3,10)
+
+    code.addLabel(inicio)
+    code.lb(r.T1, r.A0)
+    code.beq(r.T1, r.ZERO, fin)
+    code.beq(r.T1, r.T2, fin)
+    code.addi(r.T1, r.T1, -48)
+
+    code.mul(r.T0, r.T0, r.T3);
+    code.add(r.T0, r.T0, r.T1)
+    code.addi(r.A0, r.A0, 1);
+    code.j(inicio)
+
+    code.addLabel(fin)
+    code.push(r.T0)
+    code.comment('# Fin parseInt')
+}
+
+export const parsefloat = (code) => {
+
+    code.comment(`#Inicio parseFloat"`);
+
+    const inicio = code.getLabel();
+    const fin = code.getLabel();
+    const l1 = code.getLabel();
+    
+    code.add(r.A0, r.ZERO, r.T0);
+    code.li(r.T0, 0);
+    code.li(r.T1, 0);
+    code.li(r.T2, 46);
+    code.li(r.T3, 10);
+    code.li(r.T4, 1);
+    code.fcvtsw(r.FT0, r.T0);
+    code.fcvtsw(r.FT2, r.T4);
+    code.fcvtsw(r.FT3, r.T3);
+
+    code.addLabel(inicio);
+    code.lb(r.T1, r.A0);
+    code.addi(r.A0, r.A0, 1);
+    code.beq(r.T1, r.ZERO, fin);
+    code.beq(r.T1, r.T2, l1);
+    code.addi(r.T1, r.T1, -48);
+
+    code.fcvtsw(r.FT1, r.T1);
+    code.fmul(r.FT0, r.FT0, r.FT3);
+    code.fadd(r.FT0, r.FT0, r.FT1);
+    code.j(inicio);
+
+    code.addLabel(l1);
+    code.lb(r.T1, r.A0);
+    code.addi(r.A0, r.A0, 1);
+    code.beq(r.T1, r.ZERO, fin);
+    code.addi(r.T1, r.T1, -48);
+    
+    code.fcvtsw(r.FT1, r.T1);
+    code.fmul(r.FT2, r.FT2, r.FT3);
+    code.fdiv(r.FT1, r.FT1, r.FT2);
+    code.fadd(r.FT0, r.FT0, r.FT1);
+    code.j(l1);
+    
+    code.addLabel(fin)
+    
+    code.pushFloat()
+
+    code.comment(`#Fin parseFloat`)
+
+
+}
+
 
 
 export const builtins = {
@@ -357,5 +435,9 @@ export const builtins = {
     printint: printint,
     printFloat: printFloat,
     printbool: printbool,
+    toLowerCase: toLowerCase,
+    toUpperCase: toUpperCase,
+    parseInt: parseInt,
+    parsefloat: parsefloat,
 
 }

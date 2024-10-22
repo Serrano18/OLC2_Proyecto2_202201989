@@ -4,6 +4,7 @@ import { BaseVisitor } from "../Compilador/visitor.js";
 import nodos, { ReferenciaVariable }  from "../Compilador/nodos.js";
 import { floatRegisters as f } from "../RISC/constantes.js";
 import {FrameVisitor } from "../Compilador/frame.js";
+import { builtins } from "../RISC/builtins.js";
 export class CompilerVisitor extends BaseVisitor {
 
     constructor() {
@@ -360,11 +361,11 @@ export class CompilerVisitor extends BaseVisitor {
         if ( node.exp){
            node.exp.accept(this)
            const valor = this.code.getTopObject();
-           console.log("valor objeto",valor.type)
-           console.log("valor nod",node.tipo)
+           //console.log("valor objeto",valor.type)
+           //console.log("valor nod",node.tipo)
            if(valor.type !== node.tipo){
-            console.log("valor objeto",valor.type)
-            console.log("valor nod",node.tipo)
+            //console.log("valor objeto",valor.type)
+            //console.log("valor nod",node.tipo)
                 if (node.tipo !== 'var'){
                     this.code.popObject(r.T0);
                     if (node.tipo == 'char'){
@@ -749,6 +750,7 @@ export class CompilerVisitor extends BaseVisitor {
         instruccionesDeDeclaracionDeFuncion.forEach(instruccion => {
             this.code.instrucionesDeFunciones.push(instruccion);
         });
+        this.insideFunction = false;
 
     }
 
@@ -756,14 +758,39 @@ export class CompilerVisitor extends BaseVisitor {
      * 
      */
     visitLlamada(node){
+
         if (!(node.callee instanceof ReferenciaVariable)) return
 
         const nombreFuncion = node.callee.id;
 
         this.code.comment(`#Llamada a funcion ${nombreFuncion}`);
-
-        const etiquetaRetornoLlamada = this.code.getLabel();
-
+        //esta parte es la que cambie
+        if (builtins[nombreFuncion]) {
+            node.args[0].accept(this)
+            this.code.popObject(r.T0)
+            this.code.callBuiltin(nombreFuncion)
+            switch (nombreFuncion) {
+                case 'parseInt':
+                    this.code.pushObject({ type: 'int', length: 4 })
+                    break
+                case 'parsefloat':
+                    this.code.pushObject({ type: 'float', length: 4 })
+                    break
+                case 'toString':
+                    this.code.pushObject({ type: 'string', length: 4 })
+                    break
+                case 'toLowerCase':
+                    this.code.pushObject({ type: 'string', length: 4 })
+                    break
+                case 'toUpperCase':
+                    this.code.pushObject({ type: 'string', length: 4 })
+                    break
+                default:
+                    throw new Error(`No se ha implementado la función ${nombreFuncion}`)
+            }
+           return
+        }
+            //hasta aqui 
         // 1. Guardar los argumentos
         node.args.forEach((arg, index) => {
             arg.accept(this)
@@ -772,6 +799,7 @@ export class CompilerVisitor extends BaseVisitor {
             this.code.sw(r.T0, r.T1)
         });
 
+        const etiquetaRetornoLlamada = this.code.getLabel();
         // Calcular la dirección del nuevo FP en T1
         this.code.addi(r.T1, r.SP, -4)
 
@@ -810,6 +838,35 @@ export class CompilerVisitor extends BaseVisitor {
         this.code.pushObject({ type: this.functionMetada[nombreFuncion].returnType, length: 4 })
 
         this.code.comment(`#Fin de llamada a funcion ${nombreFuncion}`);
+    }
+ 
+    visitTypeOf(node){
+    
+        this.code.comment(`#Inicio TypeOf:`)
+        node.exp.accept(this)
+        const isFloat = this.code.getTopObject().type === 'float';
+        const object = this.code.popObject(isFloat ? f.FA0 : r.A0);
+
+        switch(object.type){
+            case 'int':
+                this.code.la(r.A1, 'int')
+                break;
+            case 'string':
+                this.code.la(r.A1, 'string')
+                break;
+            case 'char':
+                this.code.la(r.A1, 'char')
+                break;
+            case 'boolean':
+                this.code.la(r.A1, 'boolean')
+                break;
+            case 'float':
+                this.code.la(r.A1, 'float')
+                break;    
+        }
+        this.code.push(r.A1)
+        this.code.pushObject({ type: 'string', length: 4 })
+        
     }
 
 

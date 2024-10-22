@@ -405,6 +405,9 @@ export class Generador {
     beqz(rs1, label) {
         this.instrucciones.push(new Instruction('beqz', rs1, label))
     }
+    bgt(rd,rs1,label){
+        this.instrucciones.push(new Instruction('bgt',rd,rs1,label))
+    }
     
     toString() {
         this.endProgram()
@@ -422,6 +425,11 @@ export class Generador {
             null: .string "null"
             false: .string "false"
             true: .string "true "
+            int:     .string "int\\0"
+            float:   .string "float\\0"
+            string:  .string "string\\0"
+            boolean: .string "boolean\\0"
+            char:    .string "char\\0"
         heap:
 .text
         la ${r.HP}, heap
