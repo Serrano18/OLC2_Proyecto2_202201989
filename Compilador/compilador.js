@@ -656,16 +656,7 @@ export class CompilerVisitor extends BaseVisitor {
 
                 const isFloat = this.code.getTopObject().type === 'float';
                 const object = this.code.popObject(isFloat ? f.FA0 : r.A0);
-                //si el objeto A0 es null 1234567890 || si el objeto fA0 es null 1234567890
-
-                
-                /* .data nullo = null
-                                    this.code.li(r.A0, 10);
-                this.code.li(r.A7, 11);
-                this.code.ecall(); 
-                return
-                */
-                
+              
                 const tipoPrint = {
                     'int': () => this.code.callBuiltin('printint'),
                     'string': () => this.code.printString(),
@@ -675,10 +666,11 @@ export class CompilerVisitor extends BaseVisitor {
                 }
         
                 tipoPrint[object.type]();
-                this.code.li(r.A0, 10);
-                this.code.li(r.A7, 11);
-                this.code.ecall(); 
+                
             }
+            this.code.li(r.A0, 10);
+            this.code.li(r.A7, 11);
+            this.code.ecall(); 
              
     }
 

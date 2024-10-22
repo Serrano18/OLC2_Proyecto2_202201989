@@ -346,13 +346,13 @@ export const toUpperCase = (code) => {
 
 export const parseInt = (code) => {
     code.comment('# Inicio parseInt')
-    const inicio = code.getLabel()
-    const fin = code.getLabel()
+    const inicio = code.getLabel()//l0
+    const fin = code.getLabel()//l1
 
     code.add(r.A0,r.ZERO,r.T0)
     code.li(r.T0,0)
     code.li(r.T1,0)
-    code.li(r.T2,0)
+    code.li(r.T2,46)
     code.li(r.T3,10)
 
     code.addLabel(inicio)
@@ -385,9 +385,9 @@ export const parsefloat = (code) => {
     code.li(r.T2, 46);
     code.li(r.T3, 10);
     code.li(r.T4, 1);
-    code.fcvtsw(r.FT0, r.T0);
-    code.fcvtsw(r.FT2, r.T4);
-    code.fcvtsw(r.FT3, r.T3);
+    code.fcvtsw(f.FT0, r.T0);
+    code.fcvtsw(f.FT2, r.T4);
+    code.fcvtsw(f.FT3, r.T3);
 
     code.addLabel(inicio);
     code.lb(r.T1, r.A0);
@@ -396,9 +396,9 @@ export const parsefloat = (code) => {
     code.beq(r.T1, r.T2, l1);
     code.addi(r.T1, r.T1, -48);
 
-    code.fcvtsw(r.FT1, r.T1);
-    code.fmul(r.FT0, r.FT0, r.FT3);
-    code.fadd(r.FT0, r.FT0, r.FT1);
+    code.fcvtsw(f.FT1, r.T1);
+    code.fmul(f.FT0, f.FT0, f.FT3);
+    code.fadd(f.FT0, f.FT0, f.FT1);
     code.j(inicio);
 
     code.addLabel(l1);
@@ -407,15 +407,15 @@ export const parsefloat = (code) => {
     code.beq(r.T1, r.ZERO, fin);
     code.addi(r.T1, r.T1, -48);
     
-    code.fcvtsw(r.FT1, r.T1);
-    code.fmul(r.FT2, r.FT2, r.FT3);
-    code.fdiv(r.FT1, r.FT1, r.FT2);
-    code.fadd(r.FT0, r.FT0, r.FT1);
+    code.fcvtsw(f.FT1, r.T1);
+    code.fmul(f.FT2, f.FT2, f.FT3);
+    code.fdiv(f.FT1, f.FT1, f.FT2);
+    code.fadd(f.FT0, f.FT0, f.FT1);
     code.j(l1);
     
     code.addLabel(fin)
     
-    code.pushFloat()
+    code.pushFloat(f.FT0)
 
     code.comment(`#Fin parseFloat`)
 

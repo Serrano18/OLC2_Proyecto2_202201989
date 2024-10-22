@@ -351,4 +351,4 @@ tipo = "int" / "float" / "string" / "char" / "boolean"
 _ = ([ \t\n\r] )* 
 
 Comentarios = "//" (![\n] .)* {return nuevoNodo('Comentarios',{comentario:text().replace('//', '#')})}
-            / "/*" (!("*/") .)* "*/" {return nuevoNodo('Comentarios',{comentario:text()})}
+            / "/*" (!("*/") .)* "*/" {return nuevoNodo('Comentarios', {comentario:'#Aqui habia un multilinea'})}

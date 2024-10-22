@@ -453,7 +453,7 @@ function peg$parse(input, options) {
   var peg$f74 = function() {return text()};
   var peg$f75 = function(id) {return id};
   var peg$f76 = function() {return nuevoNodo('Comentarios',{comentario:text().replace('//', '#')})};
-  var peg$f77 = function() {return nuevoNodo('Comentarios',{comentario:text()})};
+  var peg$f77 = function() {return nuevoNodo('Comentarios', {comentario:'#Aqui habia un multilinea'})};
   var peg$currPos = options.peg$currPos | 0;
   var peg$savedPos = peg$currPos;
   var peg$posDetailsCache = [{ line: 1, column: 1 }];
