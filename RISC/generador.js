@@ -402,6 +402,10 @@ export class Generador {
         return frameRelativeLocal[index];
     }
     
+    beqz(rs1, label) {
+        this.instrucciones.push(new Instruction('beqz', rs1, label))
+    }
+    
     toString() {
         this.endProgram()
         this.comment('#Builtins')
@@ -415,7 +419,9 @@ export class Generador {
         })
 
         return `.data
-            null: .string "null\\n"
+            null: .string "null"
+            false: .string "false"
+            true: .string "true "
         heap:
 .text
         la ${r.HP}, heap

@@ -107,7 +107,7 @@ export const printch = (code) => {
     code.addLabel(l1)
     code.la(r.A1, 'null')
     code.li(r.A0,  1)
-    code.li(r.A2, 5)
+    code.li(r.A2, 4)
     code.li(r.A7, 64)
     code.ecall()
 }
@@ -127,6 +127,26 @@ export const printFloat = (code) => {
     //Verdadera
     code.addLabel(l1)
     code.la(r.A1, 'null')
+    code.li(r.A0,  1)
+    code.li(r.A2, 4)
+    code.li(r.A7, 64)
+    code.ecall()
+
+}
+export const printbool = (code) => {
+    const l1 = code.getLabel()
+    const l3 = code.getLabel()
+
+    code.beqz(r.A0,l1) //==
+    code.la(r.A1, 'true')
+    code.j(l3)
+
+
+    //Verdadera
+    code.addLabel(l1)
+    code.la(r.A1, 'false')
+
+    code.addLabel(l3)
     code.li(r.A0,  1)
     code.li(r.A2, 5)
     code.li(r.A7, 64)
@@ -152,7 +172,7 @@ export const printint = (code) => {
     code.addLabel(l1)
     code.la(r.A1, 'null')
     code.li(r.A0,  1)
-    code.li(r.A2, 5)
+    code.li(r.A2, 4)
     code.li(r.A7, 64)
     code.ecall()
 
@@ -227,5 +247,6 @@ export const builtins = {
     printch: printch,
     printint: printint,
     printFloat: printFloat,
+    printbool: printbool,
 
 }

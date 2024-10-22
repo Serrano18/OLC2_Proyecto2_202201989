@@ -669,7 +669,7 @@ export class CompilerVisitor extends BaseVisitor {
                     'int': () => this.code.callBuiltin('printint'),
                     'string': () => this.code.printString(),
                     'char': () => this.code.callBuiltin('printch'),
-                    'boolean': () => this.code.printInt(),
+                    'boolean': () => this.code.callBuiltin('printbool'),
                     'float': () => this.code.callBuiltin('printFloat'),
                 }
         
