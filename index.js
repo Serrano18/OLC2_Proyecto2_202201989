@@ -181,7 +181,7 @@ function run(){
                 }
                 //salida.innerHTML = compilador.code;
                 //salida.innerHTML = interprete?.salida || "";
-                //console.log(interprete.salida)
+                console.log(interprete.salida)
             }catch(error){
                 console.log(error)
                 errores.push({

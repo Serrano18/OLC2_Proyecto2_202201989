@@ -378,10 +378,12 @@ export const toUpperCase = (code) => {
 
     code.comment('#Fin ToUpperCase')
 }
+
+
 export const printerror = (code) => {
     code.la(r.A1, 'error')
     code.li(r.A0,  1)
-    code.li(r.A2, 5)
+    code.li(r.A2, 6)
     code.li(r.A7, 64)
     code.ecall()
 }
@@ -390,28 +392,158 @@ export const parseInt = (code) => {
     code.comment('# Inicio parseInt')
     const inicio = code.getLabel()//l0
     const fin = code.getLabel()//l1
-
+    const error = code.getLabel()//l2
     code.add(r.A0,r.ZERO,r.T0)
     code.li(r.T0,0)
     code.li(r.T1,0)
     code.li(r.T2,46)
     code.li(r.T3,10)
+    code.li(r.T4,48)
+    code.li(r.T5,57)
 
     code.addLabel(inicio)
     code.lb(r.T1, r.A0)
     code.beq(r.T1, r.ZERO, fin)
     code.beq(r.T1, r.T2, fin)
+    code.blt(r.T1, r.T4, error)
+    code.blt(r.T5, r.T1, error)
     code.addi(r.T1, r.T1, -48)
-
+    
     code.mul(r.T0, r.T0, r.T3);
     code.add(r.T0, r.T0, r.T1)
     code.addi(r.A0, r.A0, 1);
     code.j(inicio)
 
+    code.addLabel(error)
+    code.la(r.A1, 'error')
+    code.li(r.A0,  1)
+    code.li(r.A2, 6)
+    code.li(r.A7, 64)
+    code.ecall()
+
     code.addLabel(fin)
     code.push(r.T0)
     code.comment('# Fin parseInt')
 }
+
+export const boolToString = (code) => {
+    const l1 = code.getLabel()
+    code.la(r.A1, 'false')
+    code.beq(r.T0, r.ZERO, l1)
+    code.la(r.A1, 'true')
+    code.addLabel(l1)
+    code.push(r.A1)
+}
+/*
+export const parseInt = (code) => {
+    code.comment('# Inicio parseInt')
+
+    // Etiquetas para el control de flujo
+    const inicio = code.getLabel() // l0: inicio del bucle
+    const fin = code.getLabel()    // l1: fin exitoso
+    const error = code.getLabel()  // l2: manejo de error
+    code.add(r.A0, r.ZERO, r.T0);
+    // Inicialización de registros
+    // No necesitamos asignar nuevamente r.T0 ya que el valor inicial está allí.
+    code.li(r.T0, 0);              // Acumulador de resultado
+    code.li(r.T1, 0);              // Acumulador de resultado
+    code.li(r.T2, 46);             // ASCII de '.'
+    code.li(r.T3, 10);             // Base 10 para la multiplicación
+    code.li(r.T4, 1234567890);     // Valor especial para NaN
+    code.li(r.T5, 48);             // ASCII de '0'
+    code.li(r.HP, 57);             // ASCII de '9'
+
+    // Inicio del ciclo para recorrer la cadena
+    code.addLabel(inicio);
+    code.lb(r.T1, r.A0);           // Cargar el siguiente carácter en T1 desde el puntero de la cadena
+
+    code.beq(r.T1, r.ZERO, fin);   // Si es fin de cadena, ir a fin
+    code.beq(r.T1, r.T2, fin);     // Si es un punto '.', ir a fin
+
+    // Verificar si es un número (rango '0'-'9')
+    code.blt(r.T1, r.T5, error);   // Si es menor que '0', ir a error
+    code.bgt(r.T1, r.HP, error);   // Si es mayor que '9', ir a error
+
+    // Convertir ASCII a número (restar 48)
+    code.addi(r.T1, r.T1, -48);    // Restar 48 a T1 para obtener el valor numérico
+
+    // Multiplicar el acumulador por 10 y sumar el nuevo dígito
+    code.mul(r.T0, r.T0, r.T3);    // T0 = T0 * 10
+    code.add(r.T0, r.T0, r.T1);    // T0 = T0 + valor numérico
+
+    // Pasar al siguiente carácter en la cadena
+    code.addi(r.A0, r.A0, 1);      // Incrementar el puntero de la cadena
+    code.j(inicio);                // Regresar al inicio del ciclo
+
+    // Manejo de errores (carácter no válido)
+    code.addLabel(error);
+    code.li(r.T0, 1234567890);     // Asignar NaN (1234567890) a T0
+    code.la(r.A1, 'error')
+    code.li(r.A0,  1)
+    code.li(r.A2, 6)
+    code.li(r.A7, 64)
+    code.ecall()
+
+    // Fin del proceso
+    code.addLabel(fin);
+    code.push(r.T0);               // Empujar el resultado o NaN a la pila
+
+    code.comment('# Fin parseInt');
+}*/
+
+export const toString = (code) => {
+    const count = code.getLabel();
+    const endCount = code.getLabel();
+    const zeroCase = code.getLabel();
+    const loop = code.getLabel();
+    const storeLoop = code.getLabel();
+    
+    code.push(r.HP);  
+    code.li(r.T2, 10);    
+
+    code.beqz(r.T0, zeroCase);
+
+    code.mv(r.T3, r.T0);
+    code.li(r.T4, 0);
+
+    code.addLabel(count);
+    code.beqz(r.T3, endCount);
+    code.div(r.T3, r.T3, r.T2);
+    code.addi(r.T4, r.T4, 1);
+    code.j(count);
+
+    code.addLabel(endCount);
+
+    code.addLabel(loop);
+    code.rem(r.T3, r.T0, r.T2);   
+    code.addi(r.T3, r.T3, 48);
+    code.push(r.T3);
+    //code.sb(r.T3, r.HP);          
+    //code.addi(r.HP, r.HP, 1);     
+    code.div(r.T0, r.T0, r.T2);   
+    code.bnez(r.T0, loop);        
+
+    //Loop haciendo pop guardando los caracteres en el hp
+    code.addLabel(storeLoop);
+    code.pop(r.T3);
+    code.sb(r.T3, r.HP);
+    code.addi(r.HP, r.HP, 1);
+    code.addi(r.T4, r.T4, -1);
+    code.bnez(r.T4, storeLoop);
+    
+    code.sb(r.ZERO, r.HP);
+    code.addi(r.HP, r.HP, 1);
+
+    code.ret();
+
+    code.addLabel(zeroCase);
+    code.li(r.T0, 48);            
+    code.sb(r.T0, r.HP);          
+    code.addi(r.HP, r.HP, 1);
+    code.sb(r.ZERO, r.HP);        
+    code.addi(r.HP, r.HP, 1);
+}
+
 
 export const parsefloat = (code) => {
 
@@ -482,6 +614,8 @@ export const builtins = {
     parseInt: parseInt,
     parsefloat: parsefloat,
     printerror: printerror,
+    toString: toString,
+    boolToString: boolToString
     
 
 }

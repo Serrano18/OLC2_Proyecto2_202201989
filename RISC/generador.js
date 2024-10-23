@@ -342,7 +342,9 @@ export class Generador {
         return this.objectStack[this.objectStack.length - 1];
     }
 
-
+    bnez(rs1, label) {
+        this.instrucciones.push(new Instruction('bnez', rs1, label))
+    }
     //Instrucciones RISC-V para floats
     fadd(rd, rs1, rs2) {
         this.instrucciones.push(new Instruction('fadd.s', rd, rs1, rs2))
@@ -433,7 +435,7 @@ export class Generador {
             string:  .string "string\\0"
             boolean: .string "boolean\\0"
             char:    .string "char\\0"
-            error:  .string "Error "
+            error:  .string "Error\\n"
         heap:
 .text
         la ${r.HP}, heap

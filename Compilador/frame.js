@@ -92,4 +92,5 @@ export class FrameVisitor extends BaseVisitor {
     visitReferenciaVariable(node){}
     visitTypeOf(node){}
     visitComentarios(node){}
+    visitArray(node){}
 }

@@ -498,12 +498,17 @@ export class CompilerVisitor extends BaseVisitor {
             const endIfLabel = this.code.getLabel();
 
             this.code.beq(r.T0, r.ZERO, elseLabel);
+            //Parte False
             this.code.comment('#Rama verdadera');
             node.stmtTrue.accept(this);
             this.code.j(endIfLabel);
+
+            //Parte verdadera
             this.code.addLabel(elseLabel);
             this.code.comment('#Rama falsa');
             node.stmtFalse.accept(this);
+
+            //Fin del if
             this.code.addLabel(endIfLabel);
         } else {
             const endIfLabel = this.code.getLabel();
@@ -759,34 +764,32 @@ export class CompilerVisitor extends BaseVisitor {
 
         if (!(node.callee instanceof ReferenciaVariable)) return
 
-        const nombreFuncion = node.callee.id;
+        let nombreFuncion = node.callee.id;
 
         this.code.comment(`#Llamada a funcion ${nombreFuncion}`);
         //esta parte es la que cambie
         if (builtins[nombreFuncion]) {
             node.args[0].accept(this)
-            this.code.popObject(r.T0)
-            this.code.callBuiltin(nombreFuncion)
-            switch (nombreFuncion) {
-                case 'parseInt':
-                    this.code.pushObject({ type: 'int', length: 4 })
-                    break
-                case 'parsefloat':
-                    this.code.pushObject({ type: 'float', length: 4 })
-                    break
-                case 'toString':
-                    this.code.pushObject({ type: 'string', length: 4 })
-                    break
-                case 'toLowerCase':
-                    this.code.pushObject({ type: 'string', length: 4 })
-                    break
-                case 'toUpperCase':
-                    this.code.pushObject({ type: 'string', length: 4 })
-                    break
-                default:
-                    throw new Error(`No se ha implementado la función ${nombreFuncion}`)
+            const valor = this.code.popObject(r.T0)
+            const nametipos = {
+                parseInt: () => 'int',
+                parsefloat: () => 'float',
+                toString: (tipo) =>{
+                    if(tipo == 'boolean'){
+                        nombreFuncion = 'boolToString'
+                    }
+                    return 'string'
+                },
+                toLowerCase: () => 'string',
+                toUpperCase: () => 'string',
             }
-           return
+            const tipo = nametipos[nombreFuncion](valor.type)
+            this.code.callBuiltin(nombreFuncion)
+            
+            this.code.pushObject({ type: tipo, length: 4 })
+            
+           
+           return null
         }
             //hasta aqui 
         // 1. Guardar los argumentos
@@ -888,5 +891,14 @@ export class CompilerVisitor extends BaseVisitor {
         this.code.comment('#Final Return');
         
     }
+
+
+   visitArray(node){
+        this.code.comment(`#Inicio Array:`)
+        //Presento deos casos si es una sin valores y otra por defecto
+
+        this.code.comment(`#Fin Array:`)
+    
+   }
     
 }
