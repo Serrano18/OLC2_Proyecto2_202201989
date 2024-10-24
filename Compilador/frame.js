@@ -93,4 +93,6 @@ export class FrameVisitor extends BaseVisitor {
     visitTypeOf(node){}
     visitComentarios(node){}
     visitArray(node){}
+    visitGet(node){}
+    visitSet(node){}
 }

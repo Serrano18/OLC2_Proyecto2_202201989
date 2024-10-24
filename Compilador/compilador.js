@@ -1,7 +1,7 @@
 import { registers as r } from "../RISC/constantes.js";
 import { Generador } from "../RISC/generador.js";
 import { BaseVisitor } from "../Compilador/visitor.js";
-import nodos, { ReferenciaVariable }  from "../Compilador/nodos.js";
+import nodos, { Llamada, Primitivo, ReferenciaVariable }  from "../Compilador/nodos.js";
 import { floatRegisters as f } from "../RISC/constantes.js";
 import {FrameVisitor } from "../Compilador/frame.js";
 import { builtins } from "../RISC/builtins.js";
@@ -369,6 +369,14 @@ export class CompilerVisitor extends BaseVisitor {
            const valor = this.code.getTopObject();
            //console.log("valor objeto",valor.type)
            //console.log("valor nod",node.tipo)
+           //Para arrays
+           if (valor.type.endsWith("[]") && node.exp instanceof ReferenciaVariable) {
+                const varValue = this.code.popObject();
+                this.code.li(r.T1, varValue.size * 4);
+                this.code.callBuiltin('copiaVector');
+                this.code.pushObject(varValue);
+            }
+            //Para nullos
            if(valor.type !== node.tipo){
             //console.log("valor objeto",valor.type)
             //console.log("valor nod",node.tipo)
@@ -895,10 +903,138 @@ export class CompilerVisitor extends BaseVisitor {
 
    visitArray(node){
         this.code.comment(`#Inicio Array:`)
-        //Presento deos casos si es una sin valores y otra por defecto
+        //Presento deos casos si es una con valores y otra por defecto
+        //Necesito tamaño
+        let size ;
+        if(node.args){
+            if(node.args.length >0){
+                //Caso con valores
+                this.code.comment(`#Inicio Array con valores:`)
+                //Hay que recorrer los valores y guardarlos en la pila
+                //Pero tenemos el problema de que los valores en la pila se ingresan 4 3 2 1 y tiene que ser 1 2 3 4
+                //Hay que recorrer la lista de args al reves
+                //Solo los cargamos en la pila para eso el accept
+                node.args.reverse().forEach((arg) => {
+                    arg.accept(this)
+                });
+                //Actualizamos el tamaño
+                size = node.args.length
+
+            }
+           
+            this.code.comment(`#Fin Array con valores:`)
+
+        }else{
+            //Caso por defecto
+            this.code.comment('#Inicio de Arrays por defecto')
+            //Hay que ver que vengan los datos
+            if(node.tipo && node.t){
+                //Aqui hay que llenar los espacios con valores 0
+                //Entonces hay que recorrer el tamaño
+                //t es expression[]
+                size = node.t[0].valor
+                //Creamos el primitivo por defectof
+                const primitivo = new nodos.Primitivo({tipo:node.tipo,valor:0})
+                //Entonces tenemos que hacer pop de los valores el tamaño de size
+                for(let i = 0; i < size; i++){
+                        primitivo.accept(this)
+                }
+            }
+            this.code.comment('#Fin de Arrays por defecto')
+        }
+        //Asta este momento tengo la pila con los valores ahora necesito guardarlos
+        //Pero tengo que tomar en cuenta que existe la fragmentacion
+        //por lo que hay que tener en cuenta que son 4bytes popr valor
+        //GUARDAMOS LA DIRECCION DE MEMORIA DONDE ESTA EL HEAP
+        this.code.mv(r.T3, r.HP)
+
+        //Hay que sacar los valores de lla pila pop
+        for(let i = 0; i < size; i++){
+            //Problema con float al hacer popObject 
+            this.code.objectStack.pop() //Guardamos en el stack
+            this.code.pop(r.T0)
+
+            //Guardamos en el heap pero hay que hacerlo de 4 en 4 y hacer el corrimiento
+            for (let j = 0; j < 4; j++) {
+                this.code.srli(r.T1, r.T0, j*8);
+                this.code.sb(r.T1, r.HP, j);
+                this.code.addi(r.HP, r.HP, 1);
+            }
+        }
+
+        this.code.push(r.T3)
+        this.code.pushObject({type:( node.tipo|| node.args[0].tipo  )+'[]',length:4,size:size})
 
         this.code.comment(`#Fin Array:`)
     
+   }
+
+   visitGet(node){
+        this.code.comment(`#Inicio Get:`)
+        //Llamada o InArray 
+        //o bienenen las funciones o la referencia del array
+
+        node.objetivo.accept(this)
+        //Un elemento en la pila
+        if(!(node.propiedad instanceof Llamada)){
+            node.propiedad.accept(this) 
+            //dos valor en pila
+            this.code.popObject(r.T1)//Indice el array
+            const valor = this.code.popObject(r.T0) //Direccion EN R.T0 del array
+            this.code.callBuiltin('get')
+            this.code.pushObject({type:valor.type.slice(0,-2),length:4})
+        }else{
+            //Es una LLamada 
+            if(node.propiedad.args[0]){
+                node.propiedad.args[0].accept(this) 
+                this.code.popObject(r.T1) //RT1
+            }
+            const valor = this.code.popObject(r.T0)
+            switch (node.propiedad.callee.id) {
+                case 'length':
+                    this.code.li(r.T0, valor.size);
+                    this.code.push();
+                    this.code.pushObject({ type: 'int', length: 4 });
+                    break;
+                case 'indexOf':
+                    this.code.li(r.T2, valor.size);
+                    this.code.callBuiltin('indexOf');
+                    this.code.pushObject({ type: 'int', length: 4 });
+                    break;
+                case 'Join':
+                    // Implementación para 'Join'
+                    
+                    break;
+            
+                default:
+                    // Manejo de caso desconocido
+                    break;
+            }
+        }
+        this.code.comment('#Fin del Get')
+   }
+
+   visitSet(node){
+    this.code.comment(`#Inicio Set:`)
+    //esto es para una asignacion vec1[1] = arr1[0];
+
+    node.objetivo.accept(this) //pila 1
+    node.propiedad.accept(this) //pila 2
+    node.valor.accept(this) //pila 3
+
+    //Sacamos los valores de la pila
+    const valor = this.code.popObject(r.T0) //pila 2 valores saque node.valor
+    this.code.popObject(r.T1) //pila 1 valores saque node.propiedad
+    this.code.popObject(r.T2) //pila 0 valores saque node.objetivo
+
+    //Llamamos a la funcion set
+    this.code.callBuiltin('set')
+
+    //Guardamos el valor en la pila
+    this.code.pushObject({valor})
+
+    this.code.comment(`#Fin Set:`)
+
    }
     
 }

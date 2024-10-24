@@ -95,7 +95,18 @@ export class Generador {
     seqz(rd, rs1) {
         this.instrucciones.push(new Instruction('seqz', rd, rs1))
     }
-    
+    srli(rd, rs1, inmediato) {
+        this.instrucciones.push(new Instruction('srli', rd, rs1, inmediato))
+    }
+    slli(rd, rs1, inmediato) {
+        this.instrucciones.push(new Instruction('slli', rd, rs1, inmediato))
+    }
+    lbu(rd, rs1, inmediato) {
+        this.instrucciones.push(new Instruction('lbu', rd, `${inmediato}(${rs1})`))
+    }
+    or(rd, rs1, rs2) {
+        this.instrucciones.push(new Instruction('or', rd, rs1, rs2))
+    }
     // --- Saltos condicionales
 
 
@@ -316,23 +327,12 @@ export class Generador {
     popObject(rd = r.T0) {
         const object = this.objectStack.pop();
         switch (object.type) {
-            case 'int':
-                this.pop(rd);
-                break;
-            case 'string':
-                this.pop(rd);
-                break;
-            case 'char':
-                this.pop(rd);
-                break;
-            case 'boolean':
-                this.pop(rd);
-                break;
             case 'float':
                 this.popFloat(rd);
                 break;
             default:
-                break;
+                this.pop(rd);
+                break
         }
 
         return object;

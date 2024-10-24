@@ -95,6 +95,18 @@ export const fnativas = {
             valor:args[0].valor.propiedades.findIndex(x => x.valor == args[1].valor && x.tipo == args[1].tipo),
             tipo: 'int'})
     }),
+    'length': new Nativa(() => 1, (interprete,args) => {
+        if (!(args[0] instanceof Primitivo)){
+            throw new ErrorData('Error el dato no es primitivo',args[0].location)
+        }
+        if (!(args[0].valor instanceof Instancia)){
+            throw new ErrorData('Error el argumento no es un Array o Matriz',args[0].location)
+        }
+        return new Primitivo({
+            tipo: 'int',
+            valor: args[0].valor.propiedades.length
+        })
+    }),
     'Object.keys': new Nativa(() => 1, (interprete,args) => {
         if (!(args[0] instanceof Primitivo)){
             throw new ErrorData('Error el dato no es primitivo',args[0].location)

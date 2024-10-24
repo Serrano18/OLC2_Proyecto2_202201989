@@ -596,10 +596,133 @@ export const parsefloat = (code) => {
 
 }
 
+export const get = (code) => {
+    code.comment(`#Inicio get`);
+    const loop = code.getLabel();
+    const end = code.getLabel();
+    //En rt1 tengo el index
+    code.add(r.A0, r.ZERO, r.T0);
+
+    code.addLabel(loop);
+    code.beq(r.T1, r.ZERO, end);
+    //En caso falso 4bytes
+    code.addi(r.A0, r.A0, 4);
+    code.addi(r.T1, r.T1, -1);
+    code.j(loop); //regresar al loop
+
+    //En caso verdadero
+    code.addLabel(end);
+    code.li(r.T2, 0);
+    code.lbu(r.T3, r.A0, 0);
+    //Problemas por los bit
+    //code.add(r.T2, r.T2, r.T3);
+    code.or(r.T2, r.T2, r.T3);
+
+    for (let j = 1; j < 4; j++) {
+        code.addi(r.A0, r.A0, 1);
+        code.lbu(r.T3, r.A0, 0);
+        code.slli(r.T3, r.T3, j*8);
+        code.or(r.T2, r.T2, r.T3);
+    }
+    code.push(r.T2);
+    code.comment(`#Fin get`);
+}
+
+export const indexOf = (code) => {
+
+    code.comment(`#Inicio indexOf`);
+
+    const loop = code.getLabel();
+    const end = code.getLabel();
+    const found = code.getLabel();
+    code.add(r.A0, r.ZERO, r.T0);
+    code.li(r.T3, 0);
+    code.li(r.T4, 0);
+
+    code.addLabel(loop);
+    code.lbu(r.T3, r.A0, 0);
+
+    for(let j = 1; j < 4; j++){
+        code.addi(r.A0, r.A0, 1);
+        code.lbu(r.T5, r.A0, 0);
+        code.slli(r.T5, r.T5, j*8);
+        code.or(r.T3, r.T3, r.T5);
+    }
+
+    code.beq(r.T3,r.T1,found)
+
+    code.addi(r.T4, r.T4, 1);
+    code.addi(r.A0, r.A0, 1);
+
+    code.bne(r.T4, r.T2, loop);
+    code.j(end);
+
+    code.addLabel(found);
+    code.push(r.T4);
+    code.ret()
+
+    code.addLabel(end);
+    code.li(r.T0, -1);
+    code.push(r.T0);
+
+    
+}
+
+export const set = (code) => {
+    code.comment(`#Inicio set`);
+
+    const loop = code.getLabel();
+    const end = code.getLabel();7
+
+    code.add(r.A0, r.ZERO, r.T2);
+
+
+    code.addLabel(loop);
+    code.beq(r.T1, r.ZERO, end);
+    
+    code.addi(r.T1, r.T1, -1);
+    code.addi(r.A0, r.A0, 4);
+    code.j(loop);
+    
+    code.addLabel(end);
+
+    for (let j = 0; j < 4; j++) {
+        code.srli(r.T1, r.T0, j*8);
+        code.sb(r.T1, r.A0, j);
+    }
+    
+    code.push(r.T0);
+}
+
+export const copiaVector = (code) => {
+    code.push(r.HP);
+
+    const l1 = code.getLabel();
+    const l2 = code.getLabel();
+
+    code.add(r.A0, r.ZERO, r.T0);
+
+    code.addLabel(l1);
+    code.beq(r.T1, r.ZERO, l2);
+    code.lb(r.T2, r.A0)
+    code.sb(r.T2, r.HP);
+    code.addi(r.HP, r.HP, 1);
+    code.addi(r.A0, r.A0, 1);
+    code.addi(r.T1, r.T1, -1);
+    code.j(l1);
+
+    code.addLabel(l2);
+
+}
+
 
 
 export const builtins = {
     concatString: concatString,
+    get: get,
+    set: set,
+    copiaVector: copiaVector,
+    indexOf: indexOf,
     comparacionString: comparacionString,
     menorque: menorque,
     mayorque: mayorque,

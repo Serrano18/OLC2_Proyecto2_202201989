@@ -237,14 +237,14 @@ Unarias
     /llamada
     / datos
 Marray
-    = m:("indexOf"/"join"/"Object.keys") arg:( "(" _ exp:expresion?_ ")" {return exp})?{
+    = m:("length"/"indexOf"/"join"/"Object.keys") arg:( "(" _ exp:expresion?_ ")" {return exp})?{
         const valor = nuevoNodo('ReferenciaVariable', {id: m})
         return nuevoNodo('Llamada', { callee: valor, args: arg ? [arg] : [] })
     }
 llamada 
     =  objetivoInicial:datos operaciones:(
     ("(" _ args:Argumentos? _ ")" { return {args, tipo: 'funcCall' } })
-    / ("." _ id:("length"/Marray/id/llamada) _ { return { id, tipo: 'Get' } }) 
+    / ("."  id:(Marray/id/llamada) _ { return { id, tipo: 'Get' } }) 
     / ("[" _ id:expresion _ "]" { return { id, tipo: 'Inarray' } })
     )* 
   {
@@ -336,7 +336,8 @@ idvalue
 
 reservadas = "int" / "float" / "string" / "char" / "boolean" / "true" / "false" / "void" /
  "var" / "struct" / "if" / "else" / "switch" / "case" / "default" / "break" / "continue" 
- / "return" / "for" / "while" / "print" / "System.out.println"  / "new" / "null"  
+ / "return" / "for" / "while" / "print" / "System.out.println"  / "new" / "null" 
+  /"length"/"indexOf"/"join"/"Object.keys"
 
 
 separadores = [ \t\n\r]+ /"(" / ")" / "{" / "}" / "[" / "]" / "," / ";" / "." 
